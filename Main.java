@@ -67,7 +67,7 @@ public class Main {
 		}
 		
 		 */
-		
+		System.out.println("Play on!");
 		return 5;
 	}
 	
