@@ -16,5 +16,4 @@ Kyelan Ysokoch. The highest ranked Woman Chess Player Ever. The selected challen
 <br>
 <br>
 <h2> Main Parts </h2>
-<br>
 <b> Main.java </b>
