@@ -13,3 +13,9 @@ A one time competitor in the IOI, and already a major influence in the study of 
 <br> <br>
 <b> Level 4: Kyelan Ysokoch [1994.02.01] 蘇智涵  소제란 IQ: 198 Chess Rating: 2817 (Peak: 2822) </b> <br> 
 Kyelan Ysokoch. The highest ranked Woman Chess Player Ever. The selected challenger for the World Chess Championship. Born in Ukraine and fled in 1995, the oldest of the Ysokoch siblings was adopted in 1999 March by Lazlo after receiving news of her mistreatment, and vowed to give her a new opportunity. As a student, she quickly excelled at memory and logic games, particularly chess, obtaining the Grandmaster Title at age 16. Since then, she has consistnely showcased her relentless ability to formulate masterful attacks moves before the opportunity presents itself to the world. Now a major icon in Ralyas for her personality and pioneer as a feminist, Kyelan looks to continue her success and further leave her imprint on the game of chess and the political climate.
+<br>
+<br>
+<h2> Main Parts </h2>
+<br>
+<br>
+<b> Main.java </b>
