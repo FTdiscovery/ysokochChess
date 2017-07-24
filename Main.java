@@ -61,7 +61,7 @@ public class Main {
 
 
 		String gameLog = "RANDOM AI (White, Rating: 0) VS RANDOM AI (Black, Rating: 0): ";
-		int movesExchanged = 10;
+		int movesExchanged = 9;
 		while(totalMoves<movesExchanged*2) {
 			if (totalMoves%2==0) {
 				//System.out.println(Arrays.toString(legalWMoves())); 
@@ -239,6 +239,7 @@ public class Main {
 					chessBoard[6][Character.getNumericValue(a.charAt(0))-1] = " ";
 					chessBoard[7][Character.getNumericValue(a.charAt(1))-1] = a.substring(3,4);
 				}
+				
 			}
 			else if (a.substring(4).equals("x")) {
 				String temp = chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1];
@@ -905,10 +906,10 @@ public class Main {
 			}
 		} catch (Exception e) {}
 		try {//promotion && no capture
-			if (" ".equals(chessBoard[r-1][c]) && i>48) {
+			if (" ".equals(chessBoard[r+1][c]) && i>48) {
 				String[] temp={"q","r","b","n"};
 				for (int k=0; k<4; k++) {
-					oldPiece=chessBoard[r-1][c];
+					oldPiece=chessBoard[r+1][c];
 					chessBoard[r][c]=" ";
 					chessBoard[r+1][c]=temp[k];
 					if (blackKingSafe()) {
@@ -1230,7 +1231,7 @@ public class Main {
 			}
 		}
 		//pawn
-		if (blackKingPos<=64) {
+		if (blackKingPos<=48) {
 			try {
 				if ("P".equals(chessBoard[blackKingPos/8+1][blackKingPos%8-1])) { 
 					return false;
