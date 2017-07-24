@@ -37,7 +37,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		printBoard(chessBoard);
-		showAllPossibleWhiteMoves();
+		System.out.println(Arrays.toString(legalWMoves()));
+		System.out.println(Arrays.toString(legalBMoves()));
+		//showAllPossibleWhiteMoves();
 		gameStatus();
 	}
 
@@ -53,6 +55,19 @@ public class Main {
 			}
 		}
 	}
+	
+	public static void showAllPossibleBlackMoves() {
+		String[] legalBMoves = legalBMoves();
+		if (legalBMoves[0].equals("")) System.out.println("No possible moves.");
+		else {
+			for (int i = 0;i<legalWMoves().length;i++) {
+				makeMove(legalBMoves[i]);
+				System.out.println(legalBMoves[i]);
+				moveStatusBoardPrint();
+				undoMove(legalBMoves[i]);
+			}
+		}
+	}
 
 	public static int gameStatus() {
 		//1 is a white win, 0 is a tie, -1 is a black win, and 5 is ongoing.
@@ -60,13 +75,10 @@ public class Main {
 			if (!whiteKingSafe()) { System.out.println("White wins."); return 1; }
 			else { System.out.println("Tie." ); return 0;} 
 		}
-		/*
 		if(legalBMoves()[0].equals("")) { 
 			if (!blackKingSafe()) { System.out.println("Black wins."); return -1; }
 			else { System.out.println("Tie." ); return 0;} 
 		}
-		
-		 */
 		System.out.println("Play on!");
 		return 5;
 	}
@@ -710,12 +722,12 @@ public class Main {
 		for (int i=-1; i<=1; i+=2) {
 			for (int j=-1; j<=1; j+=2) {
 				try {
-					if ("k".equals(chessBoard[whiteKingPos/8+i][whiteKingPos%8+j*2])) {
+					if ("n".equals(chessBoard[whiteKingPos/8+i][whiteKingPos%8+j*2])) {
 						return false;
 					}
 				} catch (Exception e) {}
 				try {
-					if ("k".equals(chessBoard[whiteKingPos/8+i*2][whiteKingPos%8+j])) {
+					if ("n".equals(chessBoard[whiteKingPos/8+i*2][whiteKingPos%8+j])) {
 						return false;
 					}
 				} catch (Exception e) {}
@@ -724,12 +736,12 @@ public class Main {
 		//pawn
 		if (whiteKingPos>=16) {
 			try {
-				if ("p".equals(chessBoard[whiteKingPos/80-1][whiteKingPos%8-1])) {
+				if ("p".equals(chessBoard[whiteKingPos/8-1][whiteKingPos%8-1])) {
 					return false;
 				}
 			} catch (Exception e) {}
 			try {
-				if ("p".equals(chessBoard[whiteKingPos/80-1][whiteKingPos%8+1])) {
+				if ("p".equals(chessBoard[whiteKingPos/8-1][whiteKingPos%8+1])) {
 					return false;
 				}
 			} catch (Exception e) {}
@@ -738,7 +750,451 @@ public class Main {
 				for (int j=-1; j<=1; j++) {
 					if (i!=0 || j!=0) {
 						try {
-							if ("a".equals(chessBoard[whiteKingPos/8+i][whiteKingPos%8+j])) {
+							if ("k".equals(chessBoard[whiteKingPos/8+i][whiteKingPos%8+j])) {
+								return false;
+							}
+						} catch (Exception e) {}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	public static int findBlackKing() {
+		for (int i = 0;i<64;i++) {
+			if (chessBoard[i/8][i%8].equals("k")) return i;
+		}
+		return 0;
+	}
+
+	public static String[] legalBMoves() {
+		String moves="";
+		for (int i=0; i<64; i++) {
+			switch (chessBoard[i/8][i%8]) {
+			case "p": moves+=legalBP(i);
+			break;
+			case "r": moves+=legalBR(i);
+			break;
+			case "n": moves+=legalBN(i);
+			break;
+			case "b": moves+=legalBB(i);
+			break;
+			case "q": moves+=legalBQ(i);
+			break;
+			case "k": moves+=legalBK(i);
+			break;
+			}
+		}
+		return moves.split(" ");
+	}
+	
+	
+	public static String legalBP(int i) {
+		String moves="", oldPiece;
+		int r=i/8, c=i%8;
+		int displayR = 8-r;
+		for (int j=-1; j<=1; j+=2) {
+			try {//capture
+				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i<=64) {
+					oldPiece=chessBoard[r+1][c+j];
+					if(oldPiece.equals(" ")) oldPiece = "";
+					chessBoard[r][c]=" ";
+					chessBoard[r+1][c+j]="p";
+					if (blackKingSafe()) {
+						moves=moves+colNames[c]+displayR+colNames[(c+j)]+(displayR-1)+oldPiece+" ";
+					}
+					chessBoard[r][c]="p";
+					if(oldPiece.equals("")) oldPiece = " ";
+					chessBoard[r+1][c+j]=oldPiece;
+				}
+			} catch (Exception e) {}
+			try {//en passant
+				if (chessBoard[r][c+j].substring(0,1)=="P" && r==4) {
+					chessBoard[r][c]=" ";
+					chessBoard[r][c+j]=" ";
+					chessBoard[r+1][c+j]="p";
+					if (blackKingSafe() && pawnDoubleMove[8+c+j] && ((totalMoves-timePawnMoved[8+c+j])==0)) {
+						moves=moves+colNames[c]+displayR+colNames[(c+j)]+(displayR-1)+"x ";
+					}
+					chessBoard[r][c]="p";
+					chessBoard[r][c+j]="P";
+					chessBoard[r+1][c+j]=" ";
+				}
+			} catch (Exception e) {}
+			try {//promotion && capture
+				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i>64) {
+					String[] temp={"q","r","b","n"};
+					for (int k=0; k<4; k++) {
+						oldPiece=chessBoard[r+1][c+j];
+						chessBoard[r][c]=" ";
+						chessBoard[r+1][c+j]=temp[k];
+						if (blackKingSafe()) {
+							//column1,column2,captured-piece,new-piece,=
+							moves=moves+colNames[c]+colNames[(c+j)]+oldPiece+temp[k]+"="+" ";
+						}
+						chessBoard[r][c]="p";
+						chessBoard[r+1][c+j]=oldPiece;
+					}
+				}
+			} catch (Exception e) {}
+		}
+		try {//move one up
+			if (" ".equals(chessBoard[r+1][c]) && i<=64) {
+				oldPiece=chessBoard[r+1][c];
+				chessBoard[r][c]=" ";
+				chessBoard[r+1][c]="p";
+				if (blackKingSafe()) {
+					moves=moves+colNames[c]+displayR+colNames[c]+(displayR-1)+oldPiece;
+				}
+				chessBoard[r][c]="p";
+				if(oldPiece.equals("")) oldPiece = " ";
+				chessBoard[r+1][c]=oldPiece;
+			}
+		} catch (Exception e) {}
+		try {//promotion && no capture
+			if (" ".equals(chessBoard[r-1][c]) && i<16) {
+				String[] temp={"q","r","b","n"};
+				for (int k=0; k<4; k++) {
+					oldPiece=chessBoard[r-1][c];
+					chessBoard[r][c]=" ";
+					chessBoard[r+1][c]=temp[k];
+					if (blackKingSafe()) {
+						//column1,column2,captured-piece,new-piece,P
+						moves=moves+colNames[c]+colNames[c]+"/"+temp[k]+"="+" ";
+					}
+					chessBoard[r][c]="p";
+					chessBoard[r+1][c]=oldPiece;
+				}
+			}
+		} catch (Exception e) {}
+		try {//move two up
+			if (" ".equals(chessBoard[r+1][c]) && " ".equals(chessBoard[r+2][c]) && i<=48) {
+				oldPiece=chessBoard[r+2][c];
+				chessBoard[r][c]=" ";
+				chessBoard[r+2][c]="p";
+				if (blackKingSafe()) {
+					moves=moves+colNames[c]+displayR+colNames[c]+(displayR-2)+oldPiece;
+				}
+				chessBoard[r][c]="p";
+				if(oldPiece.equals("")) oldPiece = " ";
+				chessBoard[r+2][c]=oldPiece;
+			}
+		} catch (Exception e) {}
+		return moves;
+	}
+
+	
+	public static String legalBR(int i) {
+		String moves="", oldPiece;
+		int r=i/8, c=i%8;
+		int displayR = 8-r;
+		int temp=1;
+		for (int j=-1; j<=1; j+=2) {
+			try {
+				while(" ".equals(chessBoard[r][c+temp*j]))
+				{
+					oldPiece=chessBoard[r][c+temp*j];
+					if(oldPiece.equals(" ")) oldPiece = "";
+					chessBoard[r][c]=" ";
+					chessBoard[r][c+temp*j]="r";
+					if (blackKingSafe()) {
+						moves=moves+colNames[c]+displayR+colNames[(c+temp*j)]+displayR+oldPiece+" ";
+					}
+					chessBoard[r][c]="r";
+					if(oldPiece.equals("")) oldPiece = " ";
+					chessBoard[r][c+temp*j]=oldPiece;
+					temp++;
+				}
+				if (Character.isUpperCase(chessBoard[r][c+temp*j].charAt(0))) {
+					oldPiece=chessBoard[r][c+temp*j];
+					if(oldPiece.equals(" ")) oldPiece = "";
+					chessBoard[r][c]=" ";
+					chessBoard[r][c+temp*j]="r";
+					if (blackKingSafe()) {
+						moves=moves+colNames[c]+displayR+colNames[(c+temp*j)]+displayR+oldPiece+" ";
+					}
+					chessBoard[r][c]="r";
+					if(oldPiece.equals("")) oldPiece = " ";
+					chessBoard[r][c+temp*j]=oldPiece;
+				}
+			} catch (Exception e) {}
+			temp=1;
+			try {
+				while(" ".equals(chessBoard[r+temp*j][c]))
+				{
+					oldPiece=chessBoard[r+temp*j][c];
+					if(oldPiece.equals(" ")) oldPiece = "";
+					chessBoard[r][c]=" ";
+					chessBoard[r+temp*j][c]="r";
+					if (blackKingSafe()) {
+						moves=moves+colNames[c]+displayR+colNames[c]+(displayR-temp*j)+oldPiece+" ";
+					}
+					chessBoard[r][c]="r";
+					if(oldPiece.equals("")) oldPiece = " ";
+					chessBoard[r+temp*j][c]=oldPiece;
+					temp++;
+				}
+				if (Character.isUpperCase(chessBoard[r+temp*j][c].charAt(0))) {
+					oldPiece=chessBoard[r+temp*j][c];
+					if(oldPiece.equals(" ")) oldPiece = "";
+					chessBoard[r][c]=" ";
+					chessBoard[r+temp*j][c]="r";
+					if (blackKingSafe()) {
+						moves=moves+colNames[c]+displayR+colNames[c]+(displayR-temp*j)+oldPiece+" ";
+					}
+					chessBoard[r][c]="r";
+					if(oldPiece.equals("")) oldPiece = " ";
+					chessBoard[r+temp*j][c]=oldPiece;
+				}
+			} catch (Exception e) {}
+			temp=1;
+		}
+		return moves;
+	}
+	
+	
+	public static String legalBN(int i) {
+		String moves="", oldPiece;
+		int r=i/8, c=i%8;
+		int displayR = 8-r;
+		for (int j=-1; j<=1; j+=2) {
+			for (int k=-1; k<=1; k+=2) {
+				try {
+					if (Character.isUpperCase(chessBoard[r+j][c+k*2].charAt(0)) || " ".equals(chessBoard[r+j][c+k*2])) {
+						oldPiece=chessBoard[r+j][c+k*2];
+						if (oldPiece.equals(" ")) oldPiece="";
+						chessBoard[r][c]=" ";
+						if (blackKingSafe()) {
+							moves=moves+colNames[c]+displayR+colNames[(c+k*2)]+(displayR-j)+oldPiece+" ";
+						}
+						chessBoard[r][c]="n";
+						if (oldPiece.equals("")) oldPiece=" ";
+						chessBoard[r+j][c+k*2]=oldPiece;
+					}
+				} catch (Exception e) {}
+				try {
+					if (Character.isUpperCase(chessBoard[r+j*2][c+k].charAt(0)) || " ".equals(chessBoard[r+j*2][c+k])) {
+						oldPiece=chessBoard[r+j*2][c+k];
+						if (oldPiece.equals(" ")) oldPiece="";
+						chessBoard[r][c]=" ";
+						if (blackKingSafe()) {
+							moves=moves+colNames[c]+displayR+colNames[(c+k)]+(displayR-j*2)+oldPiece+" ";
+						}
+						chessBoard[r][c]="n";
+						if (oldPiece.equals("")) oldPiece=" ";
+						chessBoard[r+j*2][c+k]=oldPiece;
+					}
+				} catch (Exception e) {}
+			}
+		}
+		return moves;
+	}
+
+	
+	public static String legalBB(int i) {
+		String moves="", oldPiece;
+		int r=i/8, c=i%8;
+		int displayR = 8-r;
+		int temp=1;
+		for (int j=-1; j<=1; j+=2) {
+			for (int k=-1; k<=1; k+=2) {
+				try {
+					while(" ".equals(chessBoard[r+temp*j][c+temp*k]))
+					{
+						oldPiece=chessBoard[r+temp*j][c+temp*k];
+						if (oldPiece.equals(" ")) oldPiece="";
+						chessBoard[r][c]=" ";
+						chessBoard[r+temp*j][c+temp*k]="b";
+						if (blackKingSafe()) {
+							moves=moves+colNames[c]+displayR+colNames[(c+temp*k)]+(displayR-temp*j)+oldPiece+" ";
+						}
+						chessBoard[r][c]="b";
+						if (oldPiece.equals("")) oldPiece=" ";
+						chessBoard[r+temp*j][c+temp*k]=oldPiece;
+						temp++;
+					}
+					if (Character.isUpperCase(chessBoard[r+temp*j][c+temp*k].charAt(0))) {
+						oldPiece=chessBoard[r+temp*j][c+temp*k];
+						if (oldPiece.equals(" ")) oldPiece="";
+						chessBoard[r][c]=" ";
+						chessBoard[r+temp*j][c+temp*k]="b";
+						if (blackKingSafe()) {
+							moves=moves+colNames[c]+displayR+colNames[(c+temp*k)]+(displayR-temp*j)+oldPiece+" ";
+						}
+						chessBoard[r][c]="b";
+						if (oldPiece.equals("")) oldPiece=" ";
+						chessBoard[r+temp*j][c+temp*k]=oldPiece;
+					}
+				} catch (Exception e) {}
+				temp=1;
+			}
+		}
+		return moves;
+	}
+	
+	
+	public static String legalBQ(int i) {
+		String moves="", oldPiece;
+		int r=i/8, c=i%8;
+		int displayR = 8-r;
+		int temp=1;
+		for (int j=-1; j<=1; j++) {
+			for (int k=-1; k<=1; k++) {
+				if (j!=0 || k!=0) {
+					try {
+						while(" ".equals(chessBoard[r+temp*j][c+temp*k]))
+						{
+							oldPiece=chessBoard[r+temp*j][c+temp*k];
+							if (oldPiece.equals(" ")) oldPiece="";
+							chessBoard[r][c]=" ";
+							chessBoard[r+temp*j][c+temp*k]="q";
+							if (blackKingSafe()) {
+								moves=moves+colNames[c]+displayR+colNames[(c+temp*k)]+(displayR-temp*j)+oldPiece+" ";
+							}
+							chessBoard[r][c]="q";
+							if (oldPiece.equals("")) oldPiece=" ";
+							chessBoard[r+temp*j][c+temp*k]=oldPiece;
+							temp++;
+						}
+						if (Character.isUpperCase(chessBoard[r+temp*j][c+temp*k].charAt(0))) {
+							oldPiece=chessBoard[r+temp*j][c+temp*k];
+							if (oldPiece.equals(" ")) oldPiece="";
+							chessBoard[r][c]=" ";
+							chessBoard[r+temp*j][c+temp*k]="q";
+							if (blackKingSafe()) {
+								moves=moves+colNames[c]+displayR+colNames[(c+temp*k)]+(displayR-temp*j)+oldPiece+" ";
+							}
+							chessBoard[r][c]="q";
+							if (oldPiece.equals("")) oldPiece=" ";
+							chessBoard[r+temp*j][c+temp*k]=oldPiece;
+						}
+					} catch (Exception e) {}
+					temp=1;
+				}
+			}
+		}
+		return moves;
+	}
+	public static String legalBK(int i) {
+		int blackKingPos = findBlackKing();
+		String moves="", oldPiece;
+		int r=i/8, c=i%8;
+		int displayR = 8-r;
+		if (blackKingSafe() && blackKingMoved==0 && qbRookMoved==0 && chessBoard[0][3].equals(" ") && chessBoard[0][2].equals(" ") && chessBoard[0][1].equals(" ")) {
+			chessBoard[7][4] = " ";
+			chessBoard[7][0] = " ";
+			chessBoard[7][2] = "k";
+			chessBoard[7][3] = "r";
+			if (blackKingSafe()) moves = moves+"O-O-O ";
+			chessBoard[7][4] = "k";
+			chessBoard[7][0] = "r";
+			chessBoard[7][2] = " ";
+			chessBoard[7][3] = " ";
+		}
+		if (blackKingSafe() && blackKingMoved==0 && kbRookMoved==0 && chessBoard[0][6].equals(" ") && chessBoard[0][5].equals(" ")) {
+			chessBoard[0][4] = " ";
+			chessBoard[0][0] = " ";
+			chessBoard[0][6] = "k";
+			chessBoard[0][5] = "r";
+			if (blackKingSafe()) moves = moves+"O-O ";
+			chessBoard[0][4] = "k";
+			chessBoard[0][0] = "r";
+			chessBoard[0][6] = " ";
+			chessBoard[0][5] = " ";
+		}
+		for (int j=0; j<9; j++) {
+			if (j!=4) {
+				try {
+					if (Character.isUpperCase(chessBoard[r-1+j/3][c-1+j%3].charAt(0)) || " ".equals(chessBoard[r-1+j/3][c-1+j%3])) {
+						oldPiece=chessBoard[r-1+j/3][c-1+j%3];
+						if (oldPiece.equals(" ")) oldPiece="";
+						chessBoard[r][c]=" ";
+						chessBoard[r-1+j/3][c-1+j%3]="k";
+						int kingTemp=blackKingPos;
+						blackKingPos=i+(j/3)*8+j%3-9;
+						if (blackKingSafe()) {
+							moves=moves+colNames[c]+displayR+colNames[(c-1+j%3)]+(displayR+1-j/3)+oldPiece+" ";
+						}
+						chessBoard[r][c]="k";
+						if (oldPiece.equals("")) oldPiece=" ";
+						chessBoard[r-1+j/3][c-1+j%3]=oldPiece;
+						blackKingPos=kingTemp;
+					}
+				} catch (Exception e) {}
+			}
+		}
+		//need to add casting later
+		return moves;
+	}
+	public static boolean blackKingSafe() {
+		int blackKingPos = findBlackKing();
+		//bishop/queen
+		int temp=1;
+		for (int i=-1; i<=1; i+=2) {
+			for (int j=-1; j<=1; j+=2) {
+				try {
+					while(" ".equals(chessBoard[blackKingPos/8+temp*i][blackKingPos%8+temp*j])) {temp++;}
+					if ("B".equals(chessBoard[blackKingPos/8+temp*i][blackKingPos%8+temp*j]) ||
+							"Q".equals(chessBoard[blackKingPos/8+temp*i][blackKingPos%8+temp*j])) {
+						return false;
+					}
+				} catch (Exception e) {}
+				temp=1;
+			}
+		}
+		//rook/queen
+		for (int i=-1; i<=1; i+=2) {
+			try {
+				while(" ".equals(chessBoard[blackKingPos/8][blackKingPos%8+temp*i])) {temp++;}
+				if ("R".equals(chessBoard[blackKingPos/8][blackKingPos%8+temp*i]) ||
+						"Q".equals(chessBoard[blackKingPos/8][blackKingPos%8+temp*i])) {
+					return false;
+				}
+			} catch (Exception e) {}
+			temp=1;
+			try {
+				while(" ".equals(chessBoard[blackKingPos/8+temp*i][blackKingPos%8])) {temp++;}
+				if ("R".equals(chessBoard[blackKingPos/8+temp*i][blackKingPos%8]) ||
+						"Q".equals(chessBoard[blackKingPos/8+temp*i][blackKingPos%8])) {
+					return false;
+				}
+			} catch (Exception e) {}
+			temp=1;
+		}
+		//knight
+		for (int i=-1; i<=1; i+=2) {
+			for (int j=-1; j<=1; j+=2) {
+				try {
+					if ("N".equals(chessBoard[blackKingPos/8+i][blackKingPos%8+j*2])) {
+						return false;
+					}
+				} catch (Exception e) {}
+				try {
+					if ("N".equals(chessBoard[blackKingPos/8+i*2][blackKingPos%8+j])) {
+						return false;
+					}
+				} catch (Exception e) {}
+			}
+		}
+		//pawn
+		if (blackKingPos<=64) {
+			try {
+				if ("P".equals(chessBoard[blackKingPos/8+1][blackKingPos%8-1])) { 
+					return false;
+				}
+			} catch (Exception e) {}
+			try {
+				if ("P".equals(chessBoard[blackKingPos/8+1][blackKingPos%8+1])) {
+					return false;
+				}
+			} catch (Exception e) {}
+			//king
+			for (int i=-1; i<=1; i++) {
+				for (int j=-1; j<=1; j++) {
+					if (i!=0 || j!=0) {
+						try {
+							if ("K".equals(chessBoard[blackKingPos/8+i][blackKingPos%8+j])) {
 								return false;
 							}
 						} catch (Exception e) {}
