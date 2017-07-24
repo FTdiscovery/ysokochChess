@@ -8,7 +8,7 @@ public class Main {
 	ArrayList<int[]> states = new ArrayList<>();
 	ArrayList<Integer> appearances = new ArrayList<>();
 	ArrayList<Integer> wins = new ArrayList<>();
-	
+
 	static String[] colNames = "abcdefgh".split("");
 	static String[][] chessBoard = {
 
@@ -41,13 +41,13 @@ public class Main {
 		int neuronsPerHiddenLayer = 100;
 		double learningRate = 0.01;
 		ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
-		
+
 		/* Fool's Mate
 		makeMove("f2f3");
 		makeMove("e7e5");
 		makeMove("g2g4");
 		makeMove("d8h4");
-		*/
+		 */
 
 		/*Scholar's Mate
 		makeMove("e2e4");
@@ -57,11 +57,30 @@ public class Main {
 		makeMove("d1f3");
 		makeMove("h7h5");
 		makeMove("f3f7");
-		*/
-		
-		printBoard(chessBoard);
-		double[] randomArray = {3,2,6,3,1};
-		System.out.println(mxjava.maxNumDirectory(randomArray));
+		 */
+
+
+		String gameLog = "RANDOM AI (White, Rating: 0) VS RANDOM AI (Black, Rating: 0): ";
+		int movesExchanged = 25;
+		while(totalMoves<movesExchanged*2) {
+			if (totalMoves%2==0) {
+				//System.out.println(Arrays.toString(legalWMoves())); 
+				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
+				System.out.println(move);
+				makeMove(move);
+				printBoard(chessBoard);
+				gameLog += (totalMoves/2 + 1) + "." + move + " ";
+			}
+			else if (totalMoves%2==1) {
+				//System.out.println(Arrays.toString(legalBMoves()));
+				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalBMoves());
+				System.out.println(move);
+				makeMove(move);
+				printBoard(chessBoard);
+				gameLog += move + " ";
+			}
+		}
+		System.out.println(gameLog);
 
 	}
 
@@ -94,14 +113,13 @@ public class Main {
 	public static int gameStatus() {
 		//1 is a white win, 0 is a tie, -1 is a black win, and 5 is ongoing.
 		if(legalWMoves()[0].equals("")) { 
-			if (!whiteKingSafe()) { System.out.println("Black wins."); return -1; }
-			else { System.out.println("Tie." ); return 0;} 
+			if (!whiteKingSafe()) { return -1; }
+			else { return 0;} 
 		}
 		if(legalBMoves()[0].equals("")) { 
-			if (!blackKingSafe()) { System.out.println("White wins."); return 1; }
-			else { System.out.println("Tie." ); return 0;} 
+			if (!blackKingSafe()) { return 1; }
+			else { return 0;} 
 		}
-		System.out.println("Play on!");
 		return 5;
 	}
 
@@ -116,7 +134,7 @@ public class Main {
 		String move = a;
 		String[] files = "abcdefgh".split("");
 		if (a.length()>3) {
-			if (!a.substring(4).equals("P")) {
+			if (!a.substring(4).equals("=")) {
 				for (int i = 0;i<files.length;i++) {
 					move = move.replace(files[i], Integer.toString(i+1));
 				}
