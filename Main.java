@@ -22,7 +22,6 @@ public class Main {
 			{"P","P","P","P","P","P","P","P"},  //2
 			{"R","N","B","Q","K","B","N","R"}};	//1
 
-	//ROOK UNDO MOVE FOR MORE THAN 2 MOVES DOES NOT CHECK MEMORY.
 
 	//First 8 are for white pawns, first 8 are for black pawns
 	static boolean[] pawnDoubleMove = {false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
@@ -36,8 +35,25 @@ public class Main {
 	static int qbRookMoved = 0;
 
 	public static void main(String[] args) {
+		
+		/* Fool's Mate
+		makeMove("f2f3");
+		makeMove("e7e5");
+		makeMove("g2g4");
+		makeMove("d8h4");
+		*/
+		
+		/*Scholar's Mate
+		makeMove("e2e4");
+		makeMove("e7e5");
+		makeMove("f1c4");
+		makeMove("b8a6");
+		makeMove("d1f3");
+		makeMove("h7h5");
+		makeMove("f3f7");
+		*/
+		
 		printBoard(chessBoard);
-		System.out.println(Arrays.toString(legalWMoves()));
 		System.out.println(Arrays.toString(legalBMoves()));
 		//showAllPossibleWhiteMoves();
 		gameStatus();
@@ -72,11 +88,11 @@ public class Main {
 	public static int gameStatus() {
 		//1 is a white win, 0 is a tie, -1 is a black win, and 5 is ongoing.
 		if(legalWMoves()[0].equals("")) { 
-			if (!whiteKingSafe()) { System.out.println("White wins."); return 1; }
+			if (!whiteKingSafe()) { System.out.println("Black wins."); return -1; }
 			else { System.out.println("Tie." ); return 0;} 
 		}
 		if(legalBMoves()[0].equals("")) { 
-			if (!blackKingSafe()) { System.out.println("Black wins."); return -1; }
+			if (!blackKingSafe()) { System.out.println("White wins."); return 1; }
 			else { System.out.println("Tie." ); return 0;} 
 		}
 		System.out.println("Play on!");
@@ -814,7 +830,7 @@ public class Main {
 					chessBoard[r][c]=" ";
 					chessBoard[r][c+j]=" ";
 					chessBoard[r+1][c+j]="p";
-					if (blackKingSafe() && pawnDoubleMove[8+c+j] && ((totalMoves-timePawnMoved[8+c+j])==0)) {
+					if (blackKingSafe() && pawnDoubleMove[c+j] && ((totalMoves-timePawnMoved[c+j])==0)) {
 						moves=moves+colNames[c]+displayR+colNames[(c+j)]+(displayR-1)+"x ";
 					}
 					chessBoard[r][c]="p";
@@ -853,7 +869,7 @@ public class Main {
 			}
 		} catch (Exception e) {}
 		try {//promotion && no capture
-			if (" ".equals(chessBoard[r-1][c]) && i<16) {
+			if (" ".equals(chessBoard[r-1][c]) && i>64) {
 				String[] temp={"q","r","b","n"};
 				for (int k=0; k<4; k++) {
 					oldPiece=chessBoard[r-1][c];
