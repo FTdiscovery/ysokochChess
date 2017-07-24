@@ -1,8 +1,11 @@
 # ysokochChess
 A chess program that uses a Monte Carlo Tree Search (MCTS) based evaluation system and reinforcement to enhance its play style. Hoping for it to play like a human, and by the end, reach a ELO rating of >2000. 
 <br><br>
+<b>Level 0: Gordon Chi [2000.11.10] 紀孫佑 Chess Rating (Probably): 1200-1500</b>(CURRENT PROJECT)<br>
+Gordon is a rising upper (11th Grader) at Phillips Exeter Academy. He is interested in Chess, and plays with his dormmates in Knight House when the opportunity arises, but has not participated in a competition since his days in elementary school. Currently, he has created an Alpha-Beta Pruning based Chess Engine, but after the rise of AlphaGo, he hopes to create a similar machine that could one day defeat grandmasters of Chess, but more importantly, emulate the playstyle of humans. One goal is also for the machine to play unconventional moves, much like AlphaGo has done in a few instances (See: <a href="https://www.youtube.com/watch?v=JNrXgpSEEIE">here</a> or <a href="https://www.youtube.com/watch?v=yCALyQRN3hw&feature=youtu.be&t=3h10m24s">here</a>); however, a successful implementation of MCTS and retrieving information from a database is still the main focus at the moment.
+<br><br>
 <h2>Introduction: The Ysokoch Family. </h2>
-<b>Level 1: Elena Ysokoch [1998.12.29] 蘇子娜 소자나 IQ: 177 Chess Rating: 1813 </b>(CURRENT PROJECT)<br>
+<b>Level 1: Elena Ysokoch [1998.12.29] 蘇子娜 소자나 IQ: 177 Chess Rating: 1813 </b><br>
 Currently 18 years old, Elena Ysokoch, along with Redka Yetvogon, had been part of Ralyas' second place team in the 2015 and 2016 IMO teams, with Elena obtaining scores of 31 and 40 in the two contests respectively. As one of the best high school mathematicians, regardless of sex, Elena now studies at MIT in the USA. She had been trained in basic concepts of Chess as an elementary student, and has a rating of 1813, but the field of knights and bishops is not her main interest.
 <br><br>
 <b> Level 2: Lazlo Ysokoch [1962.07.31] 蘇俊成 Estimated IQ: ~140 Chess Rating: 2004</b> <br>
