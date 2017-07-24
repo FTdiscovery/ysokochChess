@@ -8,7 +8,7 @@ public class Main {
 	ArrayList<int[]> states = new ArrayList<>();
 	ArrayList<Integer> appearances = new ArrayList<>();
 	ArrayList<Integer> wins = new ArrayList<>();
-
+	
 	static String[] colNames = "abcdefgh".split("");
 	static String[][] chessBoard = {
 
@@ -36,6 +36,12 @@ public class Main {
 
 	public static void main(String[] args) {
 
+		double[][] normalState = new double[1][384];
+		double[][] moveOutput = new double[1][105];
+		int neuronsPerHiddenLayer = 100;
+		double learningRate = 0.01;
+		ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
+		
 		/* Fool's Mate
 		makeMove("f2f3");
 		makeMove("e7e5");
@@ -54,9 +60,9 @@ public class Main {
 		*/
 		
 		printBoard(chessBoard);
-		System.out.println(Arrays.toString(legalWMoves()));
-		System.out.println(Arrays.toString(legalBMoves()));
-		gameStatus();
+		double[] randomArray = {3,2,6,3,1};
+		System.out.println(mxjava.maxNumDirectory(randomArray));
+
 	}
 
 	public static void showAllPossibleWhiteMoves() {
@@ -278,7 +284,7 @@ public class Main {
 		totalMoves++;
 	}
 
-	public static String[][] stateVisual(int[] state) {
+	public static String[][] stateVisual(double[] state) {
 		String[][] a = {
 				{" "," "," "," "," "," "," "," "},
 				{" "," "," "," "," "," "," "," "},
@@ -319,8 +325,8 @@ public class Main {
 		System.out.println("------------------------");
 	}
 
-	public static int[] convertToState(String[][] chessBoard) {
-		int[] a = new int[64*6];
+	public static double[] convertToState(String[][] chessBoard) {
+		double[] a = new double[384];
 		for (int i = 0;i<64;i++) {
 			switch (chessBoard[i/8][i%8]) {
 			case "P": a[i*6] = 1;
