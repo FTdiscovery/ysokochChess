@@ -17,6 +17,7 @@ Kyelan Ysokoch. The highest ranked Woman Chess Player Ever. The selected challen
 <br>
 <h2> Main Parts </h2>
 <b> Main.java </b><br>
-As of 23072017
-<br>
+As of 23072017, this class holds the main functions for checking all possible White and Black Moves, as well as the game result.
+<br><br>
 <b> ChessNeural.java </b> <br>
+As of 23072017, this is a neural network with 7 hidden layers.
