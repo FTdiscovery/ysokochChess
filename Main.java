@@ -35,14 +35,14 @@ public class Main {
 	static int qbRookMoved = 0;
 
 	public static void main(String[] args) {
-		
+
 		/* Fool's Mate
 		makeMove("f2f3");
 		makeMove("e7e5");
 		makeMove("g2g4");
 		makeMove("d8h4");
-		*/
-		
+		 */
+
 		/*Scholar's Mate
 		makeMove("e2e4");
 		makeMove("e7e5");
@@ -51,9 +51,9 @@ public class Main {
 		makeMove("d1f3");
 		makeMove("h7h5");
 		makeMove("f3f7");
-		*/
+		 */
 		
-		printBoard(chessBoard);
+		System.out.println(Arrays.toString(legalWMoves()));
 		System.out.println(Arrays.toString(legalBMoves()));
 		//showAllPossibleWhiteMoves();
 		gameStatus();
@@ -71,7 +71,7 @@ public class Main {
 			}
 		}
 	}
-	
+
 	public static void showAllPossibleBlackMoves() {
 		String[] legalBMoves = legalBMoves();
 		if (legalBMoves[0].equals("")) System.out.println("No possible moves.");
@@ -98,7 +98,7 @@ public class Main {
 		System.out.println("Play on!");
 		return 5;
 	}
-	
+
 	public static void moveStatusBoardPrint() {
 		System.out.println("Move #" + ((totalMoves-1)/2+1));
 		String nextToMove = (totalMoves%2 == 0) ? "White" : "Black";
@@ -146,8 +146,14 @@ public class Main {
 		}
 		if (a.length()>3) {
 			if (a.substring(4).equals("=")) {
-				chessBoard[1][Character.getNumericValue(a.charAt(0))-1] = "P";
-				chessBoard[0][Character.getNumericValue(a.charAt(1))-1] = (a.substring(2, 3).equals("/")) ? " " : a.substring(2, 3);
+				if (totalMoves%2!=0) {
+					chessBoard[1][Character.getNumericValue(a.charAt(0))-1] = "P";
+					chessBoard[0][Character.getNumericValue(a.charAt(1))-1] = (a.substring(2, 3).equals("/")) ? " " : a.substring(2, 3);
+				}
+				else if (totalMoves%2!=1) {
+					chessBoard[6][Character.getNumericValue(a.charAt(0))-1] = "p";
+					chessBoard[7][Character.getNumericValue(a.charAt(1))-1] = (a.substring(2, 3).equals("/")) ? " " : a.substring(2, 3);
+				}
 			}
 			else if (a.substring(4).equals("x")) {
 				String temp = chessBoard[8-(Character.getNumericValue(a.charAt(3)))][Character.getNumericValue(a.charAt(2))-1];
@@ -201,8 +207,14 @@ public class Main {
 		a = compReadableMove(a);
 		if (a.length()>3) {
 			if (a.substring(4).equals("=")) {
-				chessBoard[1][Character.getNumericValue(a.charAt(0))-1] = " ";
-				chessBoard[0][Character.getNumericValue(a.charAt(1))-1] = a.substring(3,4);
+				if (totalMoves%2==0) {
+					chessBoard[1][Character.getNumericValue(a.charAt(0))-1] = " ";
+					chessBoard[0][Character.getNumericValue(a.charAt(1))-1] = a.substring(3,4);
+				}
+				else if (totalMoves%2==1) {
+					chessBoard[6][Character.getNumericValue(a.charAt(0))-1] = " ";
+					chessBoard[7][Character.getNumericValue(a.charAt(1))-1] = a.substring(3,4);
+				}
 			}
 			else if (a.substring(4).equals("x")) {
 				String temp = chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1];
@@ -256,8 +268,8 @@ public class Main {
 				if (totalMoves%2==1 && blackKingMoved==0 && kbRookMoved==0 && chessBoard[0][6].equals(" ") && chessBoard[0][5].equals(" ")) {
 					chessBoard[0][4] = " ";
 					chessBoard[0][7] = " ";
-					chessBoard[0][6] = "K";
-					chessBoard[0][5] = "R";
+					chessBoard[0][6] = "k";
+					chessBoard[0][5] = "r";
 					blackKingMoved ++;
 					kbRookMoved++;
 				}
@@ -776,7 +788,7 @@ public class Main {
 		}
 		return true;
 	}
-	
+
 	public static int findBlackKing() {
 		for (int i = 0;i<64;i++) {
 			if (chessBoard[i/8][i%8].equals("k")) return i;
@@ -804,15 +816,15 @@ public class Main {
 		}
 		return moves.split(" ");
 	}
-	
-	
+
+
 	public static String legalBP(int i) {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
 		int displayR = 8-r;
 		for (int j=-1; j<=1; j+=2) {
 			try {//capture
-				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i<=64) {
+				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i<=48) {
 					oldPiece=chessBoard[r+1][c+j];
 					if(oldPiece.equals(" ")) oldPiece = "";
 					chessBoard[r][c]=" ";
@@ -839,7 +851,7 @@ public class Main {
 				}
 			} catch (Exception e) {}
 			try {//promotion && capture
-				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i>64) {
+				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i>48) {
 					String[] temp={"q","r","b","n"};
 					for (int k=0; k<4; k++) {
 						oldPiece=chessBoard[r+1][c+j];
@@ -856,7 +868,7 @@ public class Main {
 			} catch (Exception e) {}
 		}
 		try {//move one up
-			if (" ".equals(chessBoard[r+1][c]) && i<=64) {
+			if (" ".equals(chessBoard[r+1][c]) && i<=48) {
 				oldPiece=chessBoard[r+1][c];
 				chessBoard[r][c]=" ";
 				chessBoard[r+1][c]="p";
@@ -869,7 +881,7 @@ public class Main {
 			}
 		} catch (Exception e) {}
 		try {//promotion && no capture
-			if (" ".equals(chessBoard[r-1][c]) && i>64) {
+			if (" ".equals(chessBoard[r-1][c]) && i>48) {
 				String[] temp={"q","r","b","n"};
 				for (int k=0; k<4; k++) {
 					oldPiece=chessBoard[r-1][c];
@@ -885,7 +897,7 @@ public class Main {
 			}
 		} catch (Exception e) {}
 		try {//move two up
-			if (" ".equals(chessBoard[r+1][c]) && " ".equals(chessBoard[r+2][c]) && i<=48) {
+			if (" ".equals(chessBoard[r+1][c]) && " ".equals(chessBoard[r+2][c]) && i<=16) {
 				oldPiece=chessBoard[r+2][c];
 				chessBoard[r][c]=" ";
 				chessBoard[r+2][c]="p";
@@ -900,7 +912,7 @@ public class Main {
 		return moves;
 	}
 
-	
+
 	public static String legalBR(int i) {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
@@ -968,8 +980,8 @@ public class Main {
 		}
 		return moves;
 	}
-	
-	
+
+
 	public static String legalBN(int i) {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
@@ -1007,7 +1019,7 @@ public class Main {
 		return moves;
 	}
 
-	
+
 	public static String legalBB(int i) {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
@@ -1048,8 +1060,8 @@ public class Main {
 		}
 		return moves;
 	}
-	
-	
+
+
 	public static String legalBQ(int i) {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
