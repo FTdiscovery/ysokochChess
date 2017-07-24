@@ -61,7 +61,7 @@ public class Main {
 
 
 		String gameLog = "RANDOM AI (White, Rating: 0) VS RANDOM AI (Black, Rating: 0): ";
-		int movesExchanged = 25;
+		int movesExchanged = 10;
 		while(totalMoves<movesExchanged*2) {
 			if (totalMoves%2==0) {
 				//System.out.println(Arrays.toString(legalWMoves())); 
