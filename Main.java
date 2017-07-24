@@ -41,7 +41,7 @@ public class Main {
 		makeMove("e7e5");
 		makeMove("g2g4");
 		makeMove("d8h4");
-		 */
+		*/
 
 		/*Scholar's Mate
 		makeMove("e2e4");
@@ -51,11 +51,11 @@ public class Main {
 		makeMove("d1f3");
 		makeMove("h7h5");
 		makeMove("f3f7");
-		 */
+		*/
 		
+		printBoard(chessBoard);
 		System.out.println(Arrays.toString(legalWMoves()));
 		System.out.println(Arrays.toString(legalBMoves()));
-		//showAllPossibleWhiteMoves();
 		gameStatus();
 	}
 
