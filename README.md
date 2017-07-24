@@ -1,7 +1,7 @@
 # ysokochChess
 A chess program that uses a Monte Carlo Tree Search (MCTS) based evaluation system and reinforcement to enhance its play style. Hoping for it to play like a human, and by the end, reach a ELO rating of >2000. 
 <br><br>
-<b>Level 0: Gordon Chi [2000.11.10] 紀孫佑 Chess Rating (Probably): 1200-1500</b>(CURRENT PROJECT)<br>
+<b>Level 0: Gordon Chi [2000.11.10] 紀孫佑 Chess Rating (Probably): 1200-1500</b> (CURRENT PROJECT)<br>
 Gordon is a rising upper (11th Grader) at Phillips Exeter Academy. He is interested in Chess, and plays with his dormmates in Knight House when the opportunity arises, but has not participated in a competition since his days in elementary school. Currently, he has created an Alpha-Beta Pruning based Chess Engine, but after the rise of AlphaGo, he hopes to create a similar machine that could one day defeat grandmasters of Chess, but more importantly, emulate the playstyle of humans. One goal is also for the machine to play unconventional moves, much like AlphaGo has done in a few instances (See: <a href="https://www.youtube.com/watch?v=JNrXgpSEEIE">here</a> or <a href="https://www.youtube.com/watch?v=yCALyQRN3hw&feature=youtu.be&t=3h10m24s">here</a>); however, a successful implementation of MCTS and retrieving information from a database is still the main focus at the moment.
 <br><br>
 <h2>Introduction: The Ysokoch Family. </h2>
