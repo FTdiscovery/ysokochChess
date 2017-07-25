@@ -73,7 +73,7 @@ public class Main {
 		 */
 
 		///* GENERATE RANDOM GAME.
-		int movesExchanged = 15;
+		int movesExchanged = 45;
 		while(totalMoves<movesExchanged*2) {
 			if (totalMoves%2==0) {
 				//INDENT PGN FOR EACH NEW MOVE
@@ -355,10 +355,10 @@ public class Main {
 				if (temp.equals("p") && a.substring(1, 2).equals("7") && a.substring(3, 4).equals("5")) {pawnDoubleMove[Integer.parseInt(a.substring(0,1))+7] = true; timePawnMoved[Integer.parseInt(a.substring(0,1))+7] = totalMoves+1;}
 				if (temp.equals("K")) whiteKingMoved++;
 				if (temp.equals("k")) blackKingMoved++;
-				if (temp.equals("R") && a.substring(0,2).equals("a1")) qwRookMoved++;
-				if (temp.equals("R") && a.substring(0,2).equals("h1")) kwRookMoved++;
-				if (temp.equals("r") && a.substring(0,2).equals("a8")) qbRookMoved++;
-				if (temp.equals("r") && a.substring(0,2).equals("h8")) kbRookMoved++;
+				if (temp.equals("R") && a.substring(0,2).equals("a1")) { qwRookMoved++; chessBoard[0][0]=" ";}
+				if (temp.equals("R") && a.substring(0,2).equals("h1")) { kwRookMoved++; chessBoard[7][0]=" ";}
+				if (temp.equals("r") && a.substring(0,2).equals("a8")) {qbRookMoved++; chessBoard[0][7]=" ";}
+				if (temp.equals("r") && a.substring(0,2).equals("h8")) {kbRookMoved++; chessBoard[7][7]=" ";}
 			}
 		}
 		else {
@@ -782,6 +782,7 @@ public class Main {
 			chessBoard[7][0] = " ";
 			chessBoard[7][2] = "K";
 			chessBoard[7][3] = "R";
+			String temp = chessBoard[7][7];
 			if (whiteKingSafe()) moves = moves+"O-O-O ";
 			chessBoard[7][4] = "K";
 			chessBoard[7][0] = "R";
@@ -790,12 +791,12 @@ public class Main {
 		}
 		if (chessBoard[7][4] == "K" && chessBoard[7][7] == "R" && whiteKingSafe() && whiteKingMoved==0 && kwRookMoved==0 && chessBoard[7][6].equals(" ") && chessBoard[7][5].equals(" ")) {
 			chessBoard[7][4] = " ";
-			chessBoard[7][0] = " ";
+			chessBoard[7][7] = " ";
 			chessBoard[7][6] = "K";
 			chessBoard[7][5] = "R";
 			if (whiteKingSafe()) moves = moves+"O-O ";
 			chessBoard[7][4] = "K";
-			chessBoard[7][0] = "R";
+			chessBoard[7][7] = "R";
 			chessBoard[7][6] = " ";
 			chessBoard[7][5] = " ";
 		}
@@ -1234,12 +1235,12 @@ public class Main {
 		}
 		if (chessBoard[0][4] == "k" && chessBoard[0][7] == "r" && blackKingSafe() && blackKingMoved==0 && kbRookMoved==0 && chessBoard[0][6].equals(" ") && chessBoard[0][5].equals(" ")) {
 			chessBoard[0][4] = " ";
-			chessBoard[0][0] = " ";
+			chessBoard[0][7] = " ";
 			chessBoard[0][6] = "k";
 			chessBoard[0][5] = "r";
 			if (blackKingSafe()) moves = moves+"O-O ";
 			chessBoard[0][4] = "k";
-			chessBoard[0][0] = "r";
+			chessBoard[0][7] = "r";
 			chessBoard[0][6] = " ";
 			chessBoard[0][5] = " ";
 		}
