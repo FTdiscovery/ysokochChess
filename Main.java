@@ -9,6 +9,8 @@ public class Main {
 	ArrayList<Integer> appearances = new ArrayList<>();
 	ArrayList<Integer> wins = new ArrayList<>();
 
+	static String gameLog = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
+
 	static String[] colNames = "abcdefgh".split("");
 	static String[][] chessBoard = {
 
@@ -59,28 +61,26 @@ public class Main {
 		makeMove("f3f7");
 		 */
 
-
-		String gameLog = "RANDOM AI (White, Rating: 0) VS RANDOM AI (Black, Rating: 0): ";
-		int movesExchanged = 9;
+		int movesExchanged = 15;
 		while(totalMoves<movesExchanged*2) {
 			if (totalMoves%2==0) {
-				//System.out.println(Arrays.toString(legalWMoves())); 
+				System.out.println(Arrays.toString(legalWMoves())); 
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
 				System.out.println(move);
+				gameLog += (totalMoves/2 + 1) + "."; 
 				makeMove(move);
 				printBoard(chessBoard);
-				gameLog += (totalMoves/2 + 1) + "." + move + " ";
 			}
 			else if (totalMoves%2==1) {
-				//System.out.println(Arrays.toString(legalBMoves()));
+				System.out.println(Arrays.toString(legalBMoves()));
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalBMoves());
 				System.out.println(move);
 				makeMove(move);
 				printBoard(chessBoard);
-				gameLog += move + " ";
 			}
 		}
 		System.out.println(gameLog);
+		
 
 	}
 
@@ -228,7 +228,43 @@ public class Main {
 	}
 
 	public static void makeMove(String a) {
+		String raw = a;
 		a = compReadableMove(a);
+		if (a.equals("O-O") || a.equals("O-O-O")) {
+			gameLog += a;
+		}
+		else if (a.length()>4) {
+			if (!a.substring(4).equals("=")) {
+				if (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase().equals("P")) {
+					gameLog += raw.substring(0,1) + "x" + raw.substring(2,4);
+
+				}
+				else {
+					gameLog += chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + "x" + raw.substring(2,4);
+				}
+			}
+			else {
+				if (totalMoves%2==0) { 
+					if (raw.substring(2,3) == "/") {
+						gameLog += raw.substring(1,2) +"8="+raw.substring(3,4);
+					}
+					else {
+						gameLog += raw.substring(0,1) + "x" + raw.substring(1,2) +"8="+raw.substring(3,4);
+					}
+				}
+				else if (totalMoves%2==1) { 
+					if (raw.substring(2,3) == "/") {
+						gameLog += raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
+					}
+					else {
+						gameLog += raw.substring(0,1) + "x" + raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
+					}
+				}
+			}
+		}
+		else if (raw.length()==4) {	
+			gameLog += (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
+		}
 		if (a.length()>3) {
 			if (a.substring(4).equals("=")) {
 				if (totalMoves%2==0) {
@@ -239,7 +275,7 @@ public class Main {
 					chessBoard[6][Character.getNumericValue(a.charAt(0))-1] = " ";
 					chessBoard[7][Character.getNumericValue(a.charAt(1))-1] = a.substring(3,4);
 				}
-				
+
 			}
 			else if (a.substring(4).equals("x")) {
 				String temp = chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1];
@@ -301,6 +337,11 @@ public class Main {
 			}
 		}
 		totalMoves++;
+		if (!whiteKingSafe() || !blackKingSafe()) gameLog+= "+ ";
+		else {
+			gameLog+=" ";
+		}
+
 	}
 
 	public static String[][] stateVisual(double[] state) {
@@ -484,7 +525,7 @@ public class Main {
 			}
 		} catch (Exception e) {}
 		try {//move two up
-			if (" ".equals(chessBoard[r-1][c]) && " ".equals(chessBoard[r-2][c]) && i>=48) {
+			if (" ".equals(chessBoard[r-1][c]) && " ".equals(chessBoard[r-2][c]) && i>=48 && r==6) {
 				oldPiece=chessBoard[r-2][c];
 				chessBoard[r][c]=" ";
 				chessBoard[r-2][c]="P";
@@ -922,7 +963,7 @@ public class Main {
 			}
 		} catch (Exception e) {}
 		try {//move two up
-			if (" ".equals(chessBoard[r+1][c]) && " ".equals(chessBoard[r+2][c]) && i<=16) {
+			if (" ".equals(chessBoard[r+1][c]) && " ".equals(chessBoard[r+2][c]) && i<=16 && r==1) {
 				oldPiece=chessBoard[r+2][c];
 				chessBoard[r][c]=" ";
 				chessBoard[r+2][c]="p";
@@ -1135,15 +1176,15 @@ public class Main {
 		int r=i/8, c=i%8;
 		int displayR = 8-r;
 		if (blackKingSafe() && blackKingMoved==0 && qbRookMoved==0 && chessBoard[0][3].equals(" ") && chessBoard[0][2].equals(" ") && chessBoard[0][1].equals(" ")) {
-			chessBoard[7][4] = " ";
-			chessBoard[7][0] = " ";
-			chessBoard[7][2] = "k";
-			chessBoard[7][3] = "r";
+			chessBoard[0][4] = " ";
+			chessBoard[0][0] = " ";
+			chessBoard[0][2] = "k";
+			chessBoard[0][3] = "r";
 			if (blackKingSafe()) moves = moves+"O-O-O ";
-			chessBoard[7][4] = "k";
-			chessBoard[7][0] = "r";
-			chessBoard[7][2] = " ";
-			chessBoard[7][3] = " ";
+			chessBoard[0][4] = "k";
+			chessBoard[0][0] = "r";
+			chessBoard[0][2] = " ";
+			chessBoard[0][3] = " ";
 		}
 		if (blackKingSafe() && blackKingMoved==0 && kbRookMoved==0 && chessBoard[0][6].equals(" ") && chessBoard[0][5].equals(" ")) {
 			chessBoard[0][4] = " ";
