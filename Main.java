@@ -15,14 +15,14 @@ public class Main {
 	static String[][] chessBoard = {
 
 			//A   B   C   D   E   F   G   H
-			{"r"," "," "," ","k"," "," ","r"},  //8
+			{"r","n","b","q","k","b","n","r"},  //8
 			{"p","p","p","p","p","p","p","p"},  //7
 			{" "," "," "," "," "," "," "," "},  //6
 			{" "," "," "," "," "," "," "," "},  //5
 			{" "," "," "," "," "," "," "," "},  //4
 			{" "," "," "," "," "," "," "," "},  //3
 			{"P","P","P","P","P","P","P","P"},  //2
-			{"R"," "," "," ","K"," "," ","R"}};	//1
+			{"R","N","B","Q","K","B","N","R"}};	//1
 
 
 	//First 8 are for white pawns, first 8 are for black pawns
@@ -71,8 +71,8 @@ public class Main {
 		
 
 		//GENERATE RANDOM GAME.
-		int movesExchanged = 5;
-		while(totalMoves<movesExchanged*2) {
+		int movesExchanged = 60;
+		while(totalMoves<movesExchanged*2 && gameStatus() == 5) {
 			if (totalMoves%2==0) {
 				//INDENT PGN FOR EACH NEW MOVE
 				PGN_GAME_LOG += (totalMoves/2 + 1) + "."; 
@@ -81,7 +81,6 @@ public class Main {
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
 				double[] action = mxjava.computerActionArray(brain.predict(convertToState(chessBoard)), legalWMoves());
 				
-				System.out.println(move);
 				//ADD THE STATES AND ACTION INTO THE GAME LOG
 				whiteStates.add(convertToState(chessBoard));
 				whiteActions.add(action);
@@ -108,9 +107,14 @@ public class Main {
 			}
 		}
 		//*/
-
+		
+		if (gameStatus() == 0) PGN_GAME_LOG+= 0.5-0.5;
+		else if (gameStatus() == 1) PGN_GAME_LOG += 1-0;
+		else if (gameStatus() == -1) PGN_GAME_LOG += 0-1;
+		
 		printBoard(chessBoard);
 		System.out.println(PGN_GAME_LOG);
+		System.out.println(gameStatus());
 	}
 
 	public static String[][] resetBoard() {
@@ -269,9 +273,9 @@ public class Main {
 		totalMoves--;
 	}
 
-	public static void makeMove(String a) {
-		String raw = a;
-		a = compReadableMove(a);
+	public static void moveUpdatePGN(String raw) {
+		String a = compReadableMove(raw);
+		
 		if (a.equals("O-O") || a.equals("O-O-O")) {
 			PGN_GAME_LOG += a;
 		}
@@ -320,6 +324,12 @@ public class Main {
 				else PGN_GAME_LOG += (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
 			}
 		}
+	}
+	public static void makeMove(String a) {
+		String raw = a;
+		moveUpdatePGN(raw);
+		a = compReadableMove(a);
+		
 		if (a.length()>3) {
 			if (a.substring(4).equals("=")) {
 				if (totalMoves%2==0) {
@@ -1245,7 +1255,6 @@ public class Main {
 		int displayR = 8-r;
 		if (chessBoard[0][4].equals("k") && chessBoard[0][7].equals("r") && chessBoard[0][5].equals(" ") && chessBoard[0][6].equals(" ")) {
 			if (blackKingMoved==0 && kbRookMoved==0) {
-				System.out.println("Kingside Black Castle possible.");
 				chessBoard[0][4] = " ";
 				chessBoard[0][7] = " ";
 				chessBoard[0][5] = "r";
