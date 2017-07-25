@@ -5,19 +5,12 @@ import java.util.Arrays;
 
 public class Main {
 
-	ArrayList<int[]> states = new ArrayList<>();
-	ArrayList<Integer> appearances = new ArrayList<>();
+	ArrayList<double[]> STATES = new ArrayList<>();
+	ArrayList<Integer> APPEARANCES_FOR_STATE = new ArrayList<>();
+	ArrayList<Integer> WINS_FOR_STATE = new ArrayList<>();
+
 	
-	ArrayList<int[]> whiteStates = new ArrayList<>();
-	ArrayList<int[]> whiteActions = new ArrayList<>();
-	
-	ArrayList<int[]> blackStates = new ArrayList<>();
-	ArrayList<int[]> blackActions = new ArrayList<>();
-	
-	
-	ArrayList<Integer> wins = new ArrayList<>();
-	
-	
+
 
 	static String PGN_GAME_LOG = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
 
@@ -48,18 +41,26 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		double[][] normalState = new double[1][384];
-		double[][] moveOutput = new double[1][105];
+		//GAME_LOG VARIABLES:
+		ArrayList<double[]> whiteStates = new ArrayList<>(); 
+		ArrayList<double[]> whiteActions = new ArrayList<>();
+
+		ArrayList<double[]> blackStates = new ArrayList<>();
+		ArrayList<double[]> blackActions = new ArrayList<>();
+		
+		double[][] normalState = new double[1][384]; //fed input. blank at the moment in order for initialization of the neural network
+		double[][] moveOutput = new double[1][105]; // fed output. blank of the moment in order for initialization of the neural network
 		int neuronsPerHiddenLayer = 100;
 		double learningRate = 0.01;
-		ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
+		
+		
 
 		/* Fool's Mate
 		makeMove("f2f3");
 		makeMove("e7e5");
 		makeMove("g2g4");
 		makeMove("d8h4");
-		*/
+		 */
 
 		/*Scholar's Mate
 		makeMove("e2e4");
@@ -69,30 +70,64 @@ public class Main {
 		makeMove("d1f3");
 		makeMove("h7h5");
 		makeMove("f3f7");
-		*/
+		 */
 
 		///* GENERATE RANDOM GAME.
 		int movesExchanged = 15;
 		while(totalMoves<movesExchanged*2) {
 			if (totalMoves%2==0) {
-				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
-				System.out.println(move);
+				//INDENT PGN FOR EACH NEW MOVE
 				PGN_GAME_LOG += (totalMoves/2 + 1) + "."; 
+				
+				ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
+				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
+				double[] action = mxjava.computerActionArray(brain.predict(convertToState(chessBoard)), legalWMoves());
+				
+				//ADD THE STATES AND ACTION INTO THE GAME LOG
+				whiteStates.add(convertToState(chessBoard));
+				whiteActions.add(action);
+				
+				//MAKE THE MOVE
 				makeMove(move);
+				System.out.println(move);
 				printBoard(chessBoard);
 			}
 			else if (totalMoves%2==1) {
+				
+				ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalBMoves());
-				System.out.println(move);
+				double[] action = mxjava.computerActionArray(brain.predict(convertToState(chessBoard)), legalBMoves());
+				
+				//ADD THE STATES AND ACTION INTO THE GAME LOG
+				blackStates.add(convertToState(chessBoard));
+				blackActions.add(action);
+				
+				//MAKE THE MOVE
 				makeMove(move);
+				System.out.println(move);
 				printBoard(chessBoard);
 			}
 		}
 		//*/
-		System.out.println(PGN_GAME_LOG);
 		
-
+		//PRINT GAME LOG
+		System.out.println(PGN_GAME_LOG);
 	}
+
+	public static String[][] resetBoard() {
+		String[][] reset = {
+				//A   B   C   D   E   F   G   H
+				{"r","n","b","q","k","b","n","r"},  //8
+				{"p","p","p","p","p","p","p","p"},  //7
+				{" "," "," "," "," "," "," "," "},  //6
+				{" "," "," "," "," "," "," "," "},  //5
+				{" "," "," "," "," "," "," "," "},  //4
+				{" "," "," "," "," "," "," "," "},  //3
+				{"P","P","P","P","P","P","P","P"},  //2
+				{"R","N","B","Q","K","B","N","R"}};	//1
+		return reset;
+	}
+
 
 	public static void showAllPossibleWhiteMoves() {
 		String[] legalWMoves = legalWMoves();
@@ -742,7 +777,7 @@ public class Main {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
 		int displayR = 8-r;
-		if (whiteKingSafe() && whiteKingMoved==0 && qwRookMoved==0 && chessBoard[7][3].equals(" ") && chessBoard[7][2].equals(" ") && chessBoard[7][1].equals(" ")) {
+		if (chessBoard[7][0] == "R" && chessBoard[7][4]=="K" && whiteKingSafe() && whiteKingMoved==0 && qwRookMoved==0 && chessBoard[7][3].equals(" ") && chessBoard[7][2].equals(" ") && chessBoard[7][1].equals(" ")) {
 			chessBoard[7][4] = " ";
 			chessBoard[7][0] = " ";
 			chessBoard[7][2] = "K";
@@ -753,7 +788,7 @@ public class Main {
 			chessBoard[7][2] = " ";
 			chessBoard[7][3] = " ";
 		}
-		if (whiteKingSafe() && whiteKingMoved==0 && kwRookMoved==0 && chessBoard[7][6].equals(" ") && chessBoard[7][5].equals(" ")) {
+		if (chessBoard[7][4] == "K" && chessBoard[7][7] == "R" && whiteKingSafe() && whiteKingMoved==0 && kwRookMoved==0 && chessBoard[7][6].equals(" ") && chessBoard[7][5].equals(" ")) {
 			chessBoard[7][4] = " ";
 			chessBoard[7][0] = " ";
 			chessBoard[7][6] = "K";
@@ -1186,7 +1221,7 @@ public class Main {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
 		int displayR = 8-r;
-		if (blackKingSafe() && blackKingMoved==0 && qbRookMoved==0 && chessBoard[0][3].equals(" ") && chessBoard[0][2].equals(" ") && chessBoard[0][1].equals(" ")) {
+		if (chessBoard[0][4] == "k" && chessBoard[0][0] == "r" && blackKingSafe() && blackKingMoved==0 && qbRookMoved==0 && chessBoard[0][3].equals(" ") && chessBoard[0][2].equals(" ") && chessBoard[0][1].equals(" ")) {
 			chessBoard[0][4] = " ";
 			chessBoard[0][0] = " ";
 			chessBoard[0][2] = "k";
@@ -1197,7 +1232,7 @@ public class Main {
 			chessBoard[0][2] = " ";
 			chessBoard[0][3] = " ";
 		}
-		if (blackKingSafe() && blackKingMoved==0 && kbRookMoved==0 && chessBoard[0][6].equals(" ") && chessBoard[0][5].equals(" ")) {
+		if (chessBoard[0][4] == "k" && chessBoard[0][7] == "r" && blackKingSafe() && blackKingMoved==0 && kbRookMoved==0 && chessBoard[0][6].equals(" ") && chessBoard[0][5].equals(" ")) {
 			chessBoard[0][4] = " ";
 			chessBoard[0][0] = " ";
 			chessBoard[0][6] = "k";
