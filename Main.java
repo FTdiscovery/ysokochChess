@@ -7,9 +7,19 @@ public class Main {
 
 	ArrayList<int[]> states = new ArrayList<>();
 	ArrayList<Integer> appearances = new ArrayList<>();
+	
+	ArrayList<int[]> whiteStates = new ArrayList<>();
+	ArrayList<int[]> whiteActions = new ArrayList<>();
+	
+	ArrayList<int[]> blackStates = new ArrayList<>();
+	ArrayList<int[]> blackActions = new ArrayList<>();
+	
+	
 	ArrayList<Integer> wins = new ArrayList<>();
+	
+	
 
-	static String gameLog = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
+	static String PGN_GAME_LOG = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
 
 	static String[] colNames = "abcdefgh".split("");
 	static String[][] chessBoard = {
@@ -49,7 +59,7 @@ public class Main {
 		makeMove("e7e5");
 		makeMove("g2g4");
 		makeMove("d8h4");
-		 */
+		*/
 
 		/*Scholar's Mate
 		makeMove("e2e4");
@@ -59,27 +69,27 @@ public class Main {
 		makeMove("d1f3");
 		makeMove("h7h5");
 		makeMove("f3f7");
-		 */
+		*/
 
+		///* GENERATE RANDOM GAME.
 		int movesExchanged = 15;
 		while(totalMoves<movesExchanged*2) {
 			if (totalMoves%2==0) {
-				System.out.println(Arrays.toString(legalWMoves())); 
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
 				System.out.println(move);
-				gameLog += (totalMoves/2 + 1) + "."; 
+				PGN_GAME_LOG += (totalMoves/2 + 1) + "."; 
 				makeMove(move);
 				printBoard(chessBoard);
 			}
 			else if (totalMoves%2==1) {
-				System.out.println(Arrays.toString(legalBMoves()));
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalBMoves());
 				System.out.println(move);
 				makeMove(move);
 				printBoard(chessBoard);
 			}
 		}
-		System.out.println(gameLog);
+		//*/
+		System.out.println(PGN_GAME_LOG);
 		
 
 	}
@@ -231,39 +241,39 @@ public class Main {
 		String raw = a;
 		a = compReadableMove(a);
 		if (a.equals("O-O") || a.equals("O-O-O")) {
-			gameLog += a;
+			PGN_GAME_LOG += a;
 		}
 		else if (a.length()>4) {
 			if (!a.substring(4).equals("=")) {
 				if (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase().equals("P")) {
-					gameLog += raw.substring(0,1) + "x" + raw.substring(2,4);
+					PGN_GAME_LOG += raw.substring(0,1) + "x" + raw.substring(2,4);
 
 				}
 				else {
-					gameLog += chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + "x" + raw.substring(2,4);
+					PGN_GAME_LOG += chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + "x" + raw.substring(2,4);
 				}
 			}
 			else {
 				if (totalMoves%2==0) { 
 					if (raw.substring(2,3) == "/") {
-						gameLog += raw.substring(1,2) +"8="+raw.substring(3,4);
+						PGN_GAME_LOG += raw.substring(1,2) +"8="+raw.substring(3,4);
 					}
 					else {
-						gameLog += raw.substring(0,1) + "x" + raw.substring(1,2) +"8="+raw.substring(3,4);
+						PGN_GAME_LOG += raw.substring(0,1) + "x" + raw.substring(1,2) +"8="+raw.substring(3,4);
 					}
 				}
 				else if (totalMoves%2==1) { 
 					if (raw.substring(2,3) == "/") {
-						gameLog += raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
+						PGN_GAME_LOG += raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
 					}
 					else {
-						gameLog += raw.substring(0,1) + "x" + raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
+						PGN_GAME_LOG += raw.substring(0,1) + "x" + raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
 					}
 				}
 			}
 		}
 		else if (raw.length()==4) {	
-			gameLog += (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
+			PGN_GAME_LOG += (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
 		}
 		if (a.length()>3) {
 			if (a.substring(4).equals("=")) {
@@ -337,9 +347,10 @@ public class Main {
 			}
 		}
 		totalMoves++;
-		if (!whiteKingSafe() || !blackKingSafe()) gameLog+= "+ ";
+		if ((!whiteKingSafe() || !blackKingSafe()) && gameStatus()==5) PGN_GAME_LOG+= "+ ";
+		if ((!whiteKingSafe() || !blackKingSafe()) && (gameStatus()==1 || gameStatus()==-1)) PGN_GAME_LOG+= "# ";
 		else {
-			gameLog+=" ";
+			PGN_GAME_LOG+=" ";
 		}
 
 	}
