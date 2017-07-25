@@ -9,7 +9,7 @@ public class Main {
 	ArrayList<Integer> APPEARANCES_FOR_STATE = new ArrayList<>();
 	ArrayList<Integer> WINS_FOR_STATE = new ArrayList<>();
 
-	
+
 
 
 	static String PGN_GAME_LOG = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
@@ -47,13 +47,13 @@ public class Main {
 
 		ArrayList<double[]> blackStates = new ArrayList<>();
 		ArrayList<double[]> blackActions = new ArrayList<>();
-		
+
 		double[][] normalState = new double[1][384]; //fed input. blank at the moment in order for initialization of the neural network
 		double[][] moveOutput = new double[1][105]; // fed output. blank of the moment in order for initialization of the neural network
 		int neuronsPerHiddenLayer = 100;
 		double learningRate = 0.01;
-		
-		
+
+
 
 		/* Fool's Mate
 		makeMove("f2f3");
@@ -78,30 +78,30 @@ public class Main {
 			if (totalMoves%2==0) {
 				//INDENT PGN FOR EACH NEW MOVE
 				PGN_GAME_LOG += (totalMoves/2 + 1) + "."; 
-				
+
 				ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
 				double[] action = mxjava.computerActionArray(brain.predict(convertToState(chessBoard)), legalWMoves());
-				
+
 				//ADD THE STATES AND ACTION INTO THE GAME LOG
 				whiteStates.add(convertToState(chessBoard));
 				whiteActions.add(action);
-				
+
 				//MAKE THE MOVE
 				makeMove(move);
 				System.out.println(move);
 				printBoard(chessBoard);
 			}
 			else if (totalMoves%2==1) {
-				
+
 				ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalBMoves());
 				double[] action = mxjava.computerActionArray(brain.predict(convertToState(chessBoard)), legalBMoves());
-				
+
 				//ADD THE STATES AND ACTION INTO THE GAME LOG
 				blackStates.add(convertToState(chessBoard));
 				blackActions.add(action);
-				
+
 				//MAKE THE MOVE
 				makeMove(move);
 				System.out.println(move);
@@ -109,7 +109,8 @@ public class Main {
 			}
 		}
 		//*/
-		
+
+		printBoard(chessBoard);
 		//PRINT GAME LOG
 		System.out.println(PGN_GAME_LOG);
 	}
@@ -242,11 +243,11 @@ public class Main {
 					qwRookMoved--;
 				}
 				if (totalMoves%2!=1) {
-					chessBoard[0][4] = " ";
-					chessBoard[0][0] = " ";
+					chessBoard[0][4] = "k";
+					chessBoard[0][0] = "r";
 					chessBoard[0][1] = " ";
-					chessBoard[0][2] = "k";
-					chessBoard[0][3] = "r";
+					chessBoard[0][2] = " ";
+					chessBoard[0][3] = " ";
 					blackKingMoved--;
 					qbRookMoved--;
 				}
@@ -285,7 +286,7 @@ public class Main {
 
 				}
 				else {
-					PGN_GAME_LOG += chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + "x" + raw.substring(2,4);
+						PGN_GAME_LOG += (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() +"x"+raw.substring(2,4)).replace("P", "");
 				}
 			}
 			else {
@@ -308,7 +309,7 @@ public class Main {
 			}
 		}
 		else if (raw.length()==4) {	
-			PGN_GAME_LOG += (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
+				PGN_GAME_LOG += (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
 		}
 		if (a.length()>3) {
 			if (a.substring(4).equals("=")) {
@@ -382,7 +383,7 @@ public class Main {
 			}
 		}
 		totalMoves++;
-		if ((!whiteKingSafe() || !blackKingSafe()) && gameStatus()==5) PGN_GAME_LOG+= "+ ";
+		if ((!whiteKingSafe() || !blackKingSafe()) && gameStatus()==5) PGN_GAME_LOG+= "+";
 		if ((!whiteKingSafe() || !blackKingSafe()) && (gameStatus()==1 || gameStatus()==-1)) PGN_GAME_LOG+= "# ";
 		else {
 			PGN_GAME_LOG+=" ";
@@ -511,6 +512,7 @@ public class Main {
 					chessBoard[r-1][c+j]=oldPiece;
 				}
 			} catch (Exception e) {}
+			/*
 			try {//en passant
 				if (chessBoard[r][c+j].substring(0,1)=="p" && r==3) {
 					chessBoard[r][c]=" ";
@@ -524,6 +526,7 @@ public class Main {
 					chessBoard[r-1][c+j]=" ";
 				}
 			} catch (Exception e) {}
+			 */
 			try {//promotion && capture
 				if (Character.isLowerCase(chessBoard[r-1][c+j].charAt(0)) && i<16) {
 					String[] temp={"Q","R","B","N"};
@@ -777,6 +780,7 @@ public class Main {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
 		int displayR = 8-r;
+		/*
 		if (chessBoard[7][0] == "R" && chessBoard[7][4]=="K" && whiteKingSafe() && whiteKingMoved==0 && qwRookMoved==0 && chessBoard[7][3].equals(" ") && chessBoard[7][2].equals(" ") && chessBoard[7][1].equals(" ")) {
 			chessBoard[7][4] = " ";
 			chessBoard[7][0] = " ";
@@ -800,6 +804,7 @@ public class Main {
 			chessBoard[7][6] = " ";
 			chessBoard[7][5] = " ";
 		}
+		 */
 		for (int j=0; j<9; j++) {
 			if (j!=4) {
 				try {
@@ -950,6 +955,7 @@ public class Main {
 					chessBoard[r+1][c+j]=oldPiece;
 				}
 			} catch (Exception e) {}
+			/*
 			try {//en passant
 				if (chessBoard[r][c+j].substring(0,1)=="P" && r==4) {
 					chessBoard[r][c]=" ";
@@ -963,6 +969,7 @@ public class Main {
 					chessBoard[r+1][c+j]=" ";
 				}
 			} catch (Exception e) {}
+			 */
 			try {//promotion && capture
 				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i>48) {
 					String[] temp={"q","r","b","n"};
@@ -1222,6 +1229,7 @@ public class Main {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
 		int displayR = 8-r;
+		/*
 		if (chessBoard[0][4] == "k" && chessBoard[0][0] == "r" && blackKingSafe() && blackKingMoved==0 && qbRookMoved==0 && chessBoard[0][3].equals(" ") && chessBoard[0][2].equals(" ") && chessBoard[0][1].equals(" ")) {
 			chessBoard[0][4] = " ";
 			chessBoard[0][0] = " ";
@@ -1244,6 +1252,7 @@ public class Main {
 			chessBoard[0][6] = " ";
 			chessBoard[0][5] = " ";
 		}
+		 */
 		for (int j=0; j<9; j++) {
 			if (j!=4) {
 				try {
