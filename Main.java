@@ -13,7 +13,6 @@ public class Main {
 
 	static String[] colNames = "abcdefgh".split("");
 	static String[][] chessBoard = {
-
 			//A   B   C   D   E   F   G   H
 			{"r","n","b","q","k","b","n","r"},  //8
 			{"p","p","p","p","p","p","p","p"},  //7
@@ -99,7 +98,8 @@ public class Main {
 				//ADD THE STATES AND ACTION INTO THE GAME LOG
 				blackStates.add(convertToState(chessBoard));
 				blackActions.add(action);
-
+				
+				
 				//MAKE THE MOVE
 				makeMove(move);
 				System.out.println(move);
@@ -536,7 +536,7 @@ public class Main {
 			} catch (Exception e) {}
 			/*
 			try {//en passant
-				if (chessBoard[r][c+j].substring(0,1)=="p" && r==3) {
+				if (chessBoard[r][c+j].equals("p") && r==3) {
 					chessBoard[r][c]=" ";
 					chessBoard[r][c+j]=" ";
 					chessBoard[r-1][c+j]="P";
@@ -548,7 +548,7 @@ public class Main {
 					chessBoard[r-1][c+j]=" ";
 				}
 			} catch (Exception e) {}
-			 */
+			*/
 			try {//promotion && capture
 				if (Character.isLowerCase(chessBoard[r-1][c+j].charAt(0)) && i<16) {
 					String[] temp={"Q","R","B","N"};
@@ -689,6 +689,7 @@ public class Main {
 						oldPiece=chessBoard[r+j][c+k*2];
 						if (oldPiece.equals(" ")) oldPiece="";
 						chessBoard[r][c]=" ";
+						chessBoard[r+j][c+k*2] = "N";
 						if (whiteKingSafe()) {
 							moves=moves+colNames[c]+displayR+colNames[(c+k*2)]+(displayR-j)+oldPiece+" ";
 						}
@@ -702,6 +703,7 @@ public class Main {
 						oldPiece=chessBoard[r+j*2][c+k];
 						if (oldPiece.equals(" ")) oldPiece="";
 						chessBoard[r][c]=" ";
+						chessBoard[r+j*2][c+k]="N";
 						if (whiteKingSafe()) {
 							moves=moves+colNames[c]+displayR+colNames[(c+k)]+(displayR-j*2)+oldPiece+" ";
 						}
@@ -1140,6 +1142,7 @@ public class Main {
 						oldPiece=chessBoard[r+j][c+k*2];
 						if (oldPiece.equals(" ")) oldPiece="";
 						chessBoard[r][c]=" ";
+						chessBoard[r+j][c+k*2]="n";
 						if (blackKingSafe()) {
 							moves=moves+colNames[c]+displayR+colNames[(c+k*2)]+(displayR-j)+oldPiece+" ";
 						}
@@ -1153,6 +1156,7 @@ public class Main {
 						oldPiece=chessBoard[r+j*2][c+k];
 						if (oldPiece.equals(" ")) oldPiece="";
 						chessBoard[r][c]=" ";
+						chessBoard[r+j*2][c+k]="n";
 						if (blackKingSafe()) {
 							moves=moves+colNames[c]+displayR+colNames[(c+k)]+(displayR-j*2)+oldPiece+" ";
 						}
