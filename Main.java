@@ -15,14 +15,14 @@ public class Main {
 	static String[][] chessBoard = {
 
 			//A   B   C   D   E   F   G   H
-			{"r","n","b","q","k","b","n","r"},  //8
+			{"r"," "," "," ","k"," "," ","r"},  //8
 			{"p","p","p","p","p","p","p","p"},  //7
 			{" "," "," "," "," "," "," "," "},  //6
 			{" "," "," "," "," "," "," "," "},  //5
 			{" "," "," "," "," "," "," "," "},  //4
 			{" "," "," "," "," "," "," "," "},  //3
 			{"P","P","P","P","P","P","P","P"},  //2
-			{"R","N","B","Q","K","B","N","R"}};	//1
+			{"R"," "," "," ","K"," "," ","R"}};	//1
 
 
 	//First 8 are for white pawns, first 8 are for black pawns
@@ -68,9 +68,10 @@ public class Main {
 		makeMove("h7h5");
 		makeMove("f3f7");
 		 */
+		
 
-		///* GENERATE RANDOM GAME.
-		int movesExchanged = 45;
+		//GENERATE RANDOM GAME.
+		int movesExchanged = 5;
 		while(totalMoves<movesExchanged*2) {
 			if (totalMoves%2==0) {
 				//INDENT PGN FOR EACH NEW MOVE
@@ -79,7 +80,8 @@ public class Main {
 				ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
 				double[] action = mxjava.computerActionArray(brain.predict(convertToState(chessBoard)), legalWMoves());
-
+				
+				System.out.println(move);
 				//ADD THE STATES AND ACTION INTO THE GAME LOG
 				whiteStates.add(convertToState(chessBoard));
 				whiteActions.add(action);
@@ -232,7 +234,6 @@ public class Main {
 				if (totalMoves%2!=0) {
 					chessBoard[7][4] = "K";
 					chessBoard[7][0] = "R";
-					chessBoard[7][1] = " ";
 					chessBoard[7][2] = " ";
 					chessBoard[7][3] = " ";
 					whiteKingMoved--;
@@ -241,7 +242,6 @@ public class Main {
 				if (totalMoves%2!=1) {
 					chessBoard[0][4] = "k";
 					chessBoard[0][0] = "r";
-					chessBoard[0][1] = " ";
 					chessBoard[0][2] = " ";
 					chessBoard[0][3] = " ";
 					blackKingMoved--;
@@ -339,7 +339,7 @@ public class Main {
 				chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(2))-1] = " ";
 			}
 			else if (a.equals("O-O-O")) {
-				if (totalMoves%2==0 && whiteKingMoved==0 && qwRookMoved==0 && chessBoard[7][3].equals(" ") && chessBoard[7][2].equals(" ") && chessBoard[7][1].equals(" ")) {
+				if (totalMoves%2==0) {
 					chessBoard[7][4] = " ";
 					chessBoard[7][0] = " ";
 					chessBoard[7][2] = "K";
@@ -347,7 +347,7 @@ public class Main {
 					whiteKingMoved++;
 					qwRookMoved++;
 				}
-				if (totalMoves%2==1 && blackKingMoved==0 && qbRookMoved==0 && chessBoard[0][3].equals(" ") && chessBoard[0][2].equals(" ") && chessBoard[0][1].equals(" ")) {
+				else if (totalMoves%2==1) {
 					chessBoard[0][4] = " ";
 					chessBoard[0][0] = " ";
 					chessBoard[0][2] = "k";
@@ -373,7 +373,7 @@ public class Main {
 		}
 		else {
 			if (a.equals("O-O")) {
-				if (totalMoves%2==0 && whiteKingMoved==0 && kwRookMoved==0 && chessBoard[7][6].equals(" ") && chessBoard[7][5].equals(" ")) {
+				if (totalMoves%2==0) {
 					chessBoard[7][4] = " ";
 					chessBoard[7][7] = " ";
 					chessBoard[7][6] = "K";
@@ -381,12 +381,12 @@ public class Main {
 					whiteKingMoved++;
 					kwRookMoved++;
 				}
-				if (totalMoves%2==1 && blackKingMoved==0 && kbRookMoved==0 && chessBoard[0][6].equals(" ") && chessBoard[0][5].equals(" ")) {
+				else if (totalMoves%2==1) {
 					chessBoard[0][4] = " ";
 					chessBoard[0][7] = " ";
 					chessBoard[0][6] = "k";
 					chessBoard[0][5] = "r";
-					blackKingMoved ++;
+					blackKingMoved++;
 					kbRookMoved++;
 				}
 			}
@@ -789,31 +789,36 @@ public class Main {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
 		int displayR = 8-r;
-		/*
-		if (chessBoard[7][0] == "R" && chessBoard[7][4]=="K" && whiteKingSafe() && whiteKingMoved==0 && qwRookMoved==0 && chessBoard[7][3].equals(" ") && chessBoard[7][2].equals(" ") && chessBoard[7][1].equals(" ")) {
-			chessBoard[7][4] = " ";
-			chessBoard[7][0] = " ";
-			chessBoard[7][2] = "K";
-			chessBoard[7][3] = "R";
-			String temp = chessBoard[7][7];
-			if (whiteKingSafe()) moves = moves+"O-O-O ";
-			chessBoard[7][4] = "K";
-			chessBoard[7][0] = "R";
-			chessBoard[7][2] = " ";
-			chessBoard[7][3] = " ";
+		if (chessBoard[7][4].equals("K") && chessBoard[7][7].equals("R") && chessBoard[7][5].equals(" ") && chessBoard[7][6].equals(" ")) {
+			if (whiteKingMoved==0 && kwRookMoved==0) {
+				chessBoard[7][4] = " ";
+				chessBoard[7][7] = " ";
+				chessBoard[7][5] = "R";
+				chessBoard[7][6] = "K";
+				if (whiteKingSafe()) {
+					moves=moves+"O-O ";
+				}
+				chessBoard[7][5] = " ";
+				chessBoard[7][6] = " ";
+				chessBoard[7][7] = "R";
+				chessBoard[7][4] = "K";
+			}
 		}
-		if (chessBoard[7][4] == "K" && chessBoard[7][7] == "R" && whiteKingSafe() && whiteKingMoved==0 && kwRookMoved==0 && chessBoard[7][6].equals(" ") && chessBoard[7][5].equals(" ")) {
-			chessBoard[7][4] = " ";
-			chessBoard[7][7] = " ";
-			chessBoard[7][6] = "K";
-			chessBoard[7][5] = "R";
-			if (whiteKingSafe()) moves = moves+"O-O ";
-			chessBoard[7][4] = "K";
-			chessBoard[7][7] = "R";
-			chessBoard[7][6] = " ";
-			chessBoard[7][5] = " ";
+		if (chessBoard[7][4].equals("K") && chessBoard[7][0].equals("R") && chessBoard[7][1].equals(" ") && chessBoard[7][2].equals(" ") && chessBoard[7][3].equals(" ")) {
+			if (whiteKingMoved==0 && qwRookMoved==0) {
+				chessBoard[7][4] = " ";
+				chessBoard[7][0] = " ";
+				chessBoard[7][3] = "R";
+				chessBoard[7][2] = "K";
+				if (whiteKingSafe()) {
+					moves=moves+"O-O-O ";
+				}
+				chessBoard[7][4] = "K";
+				chessBoard[7][0] = "R";
+				chessBoard[7][3] = " ";
+				chessBoard[7][2] = " ";
+			}
 		}
-		 */
 		for (int j=0; j<9; j++) {
 			if (j!=4) {
 				try {
@@ -1238,30 +1243,37 @@ public class Main {
 		String moves="", oldPiece;
 		int r=i/8, c=i%8;
 		int displayR = 8-r;
-		/*
-		if (chessBoard[0][4] == "k" && chessBoard[0][0] == "r" && blackKingSafe() && blackKingMoved==0 && qbRookMoved==0 && chessBoard[0][3].equals(" ") && chessBoard[0][2].equals(" ") && chessBoard[0][1].equals(" ")) {
-			chessBoard[0][4] = " ";
-			chessBoard[0][0] = " ";
-			chessBoard[0][2] = "k";
-			chessBoard[0][3] = "r";
-			if (blackKingSafe()) moves = moves+"O-O-O ";
-			chessBoard[0][4] = "k";
-			chessBoard[0][0] = "r";
-			chessBoard[0][2] = " ";
-			chessBoard[0][3] = " ";
+		if (chessBoard[0][4].equals("k") && chessBoard[0][7].equals("r") && chessBoard[0][5].equals(" ") && chessBoard[0][6].equals(" ")) {
+			if (blackKingMoved==0 && kbRookMoved==0) {
+				System.out.println("Kingside Black Castle possible.");
+				chessBoard[0][4] = " ";
+				chessBoard[0][7] = " ";
+				chessBoard[0][5] = "r";
+				chessBoard[0][6] = "k";
+				if (blackKingSafe()) {
+					moves=moves+"O-O ";
+				}
+				chessBoard[0][5] = " ";
+				chessBoard[0][6] = " ";
+				chessBoard[0][7] = "r";
+				chessBoard[0][4] = "k";
+			}
 		}
-		if (chessBoard[0][4] == "k" && chessBoard[0][7] == "r" && blackKingSafe() && blackKingMoved==0 && kbRookMoved==0 && chessBoard[0][6].equals(" ") && chessBoard[0][5].equals(" ")) {
-			chessBoard[0][4] = " ";
-			chessBoard[0][7] = " ";
-			chessBoard[0][6] = "k";
-			chessBoard[0][5] = "r";
-			if (blackKingSafe()) moves = moves+"O-O ";
-			chessBoard[0][4] = "k";
-			chessBoard[0][7] = "r";
-			chessBoard[0][6] = " ";
-			chessBoard[0][5] = " ";
+		if (chessBoard[0][4].equals("K") && chessBoard[0][0].equals("R") && chessBoard[0][1].equals(" ") && chessBoard[0][2].equals(" ") && chessBoard[0][3].equals(" ")) {
+			if (whiteKingMoved==0 && qwRookMoved==0) {
+				chessBoard[0][4] = " ";
+				chessBoard[0][0] = " ";
+				chessBoard[0][3] = "r";
+				chessBoard[0][2] = "k";
+				if (whiteKingSafe()) {
+					moves=moves+"O-O-O ";
+				}
+				chessBoard[0][4] = "k";
+				chessBoard[0][0] = "r";
+				chessBoard[0][3] = " ";
+				chessBoard[0][2] = " ";
+			}
 		}
-		 */
 		for (int j=0; j<9; j++) {
 			if (j!=4) {
 				try {
