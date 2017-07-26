@@ -36,6 +36,7 @@ public class Main {
 	static int qbRookMoved = 0;
 
 	static String pureLog = "";
+	static boolean debugOn = false;
 
 	public static void main(String[] args) {
 
@@ -51,14 +52,12 @@ public class Main {
 		int neuronsPerHiddenLayer = 100;
 		double learningRate = 0.01;
 
-
-
 		/* Fool's Mate
 		makeMove("f2f3");
 		makeMove("e7e5");
 		makeMove("g2g4");
 		makeMove("d8h4");
-		 */
+	    //*/
 
 		/*Scholar's Mate
 		makeMove("e2e4");
@@ -68,16 +67,13 @@ public class Main {
 		makeMove("d1f3");
 		makeMove("h7h5");
 		makeMove("f3f7");
-		 */
+		// */
 
 
 		//GENERATE RANDOM GAME.
 		int movesExchanged = 60;
 		while(totalMoves<movesExchanged*2 && gameStatus() == 5) {
 			if (totalMoves%2==0) {
-				//INDENT PGN FOR EACH NEW MOVE
-				PGN_GAME_LOG += (totalMoves/2 + 1) + "."; 
-				pureLog += (totalMoves/2 + 1) + ".";
 
 				ChessNeural brain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
 				String move = mxjava.computerMove(brain.predict(convertToState(chessBoard)), legalWMoves());
@@ -89,9 +85,12 @@ public class Main {
 
 				//MAKE THE MOVE
 				makeMove(move);
-				System.out.println(move);
+				if (debugOn) {
+				pureLog += (totalMoves/2 + 1) + ".";
 				pureLog += move+ " ";
+				System.out.println(move);
 				printBoard(chessBoard);
+				}
 			}
 			else if (totalMoves%2==1) {
 
@@ -106,9 +105,11 @@ public class Main {
 
 				//MAKE THE MOVE
 				makeMove(move);
-				System.out.println(move);
+				if (debugOn) {
 				pureLog += move+ " ";
+				System.out.println(move);
 				printBoard(chessBoard);
+				}
 			}
 		}
 		//*/
@@ -280,53 +281,53 @@ public class Main {
 
 	public static String moveUpdatePGN(String raw) {
 		String a = compReadableMove(raw);
-
+		String moveMarker = (totalMoves%2==0) ? (totalMoves/2 + 1) + "." : "";
 		if (a.equals("O-O") || a.equals("O-O-O")) {
-			return a;
+			return moveMarker+a;
 		}
 		else if (a.length()>4) {
 			if (!a.substring(4).equals("=")) {
 				if (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase().equals("P")) {
-					return raw.substring(0,1) + "x" + raw.substring(2,4);
+					return moveMarker+raw.substring(0,1) + "x" + raw.substring(2,4);
 				}
 
 				else {
 					if (totalMoves%2==0) {
-						if (mxjava.specifyInitial(legalWMoves(), chessBoard, a)) return (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(0,1)+"x"+raw.substring(2,4)).replace("P", "");
-						else return (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + "x"+raw.substring(2,4)).replace("P", "");
+						if (mxjava.specifyInitial(legalWMoves(), chessBoard, a)) return moveMarker+(chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(0,1)+"x"+raw.substring(2,4)).replace("P", "");
+						else return moveMarker+(chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + "x"+raw.substring(2,4)).replace("P", "");
 					}
 					else if (totalMoves%2==1) {
-						if (mxjava.specifyInitial(legalBMoves(), chessBoard, a)) return (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(0,1)+"x"+raw.substring(2,4)).replace("P", "");
-						else return (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + "x"+raw.substring(2,4)).replace("P", "");
+						if (mxjava.specifyInitial(legalBMoves(), chessBoard, a)) return moveMarker+(chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(0,1)+"x"+raw.substring(2,4)).replace("P", "");
+						else return moveMarker+(chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + "x"+raw.substring(2,4)).replace("P", "");
 					}}
 			}
 			else {
 				if (totalMoves%2==0) { 
 					if (raw.substring(0,1).equals(raw.substring(1,2))) {
-						return raw.substring(1,2) +"8="+raw.substring(3,4);
+						return moveMarker+raw.substring(1,2) +"8="+raw.substring(3,4);
 					}
 					else {
-						return raw.substring(0,1) + "x" + raw.substring(1,2) +"8="+raw.substring(3,4);
+						return moveMarker+raw.substring(0,1) + "x" + raw.substring(1,2) +"8="+raw.substring(3,4);
 					}
 				}
 				else if (totalMoves%2==1) { 
 					if (raw.substring(2,3) == "/") {
-						return raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
+						return moveMarker+raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
 					}
 					else {
-						return raw.substring(0,1) + "x" + raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
+						return moveMarker+raw.substring(0,1) + "x" + raw.substring(1,2) +"1="+raw.substring(3,4).toUpperCase();
 					}
 				}
 			}
 		}
 		else if (raw.length()==4) {	
 			if (totalMoves%2==0) {
-				if (mxjava.specifyInitial(legalWMoves(), chessBoard, a)) return (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(0,1)+raw.substring(2,4)).replace("P", "");
-				else return (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
+				if (mxjava.specifyInitial(legalWMoves(), chessBoard, a)) return moveMarker+(chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(0,1)+raw.substring(2,4)).replace("P", "");
+				else return moveMarker+(chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
 			}
 			else if (totalMoves%2==1) {
-				if (mxjava.specifyInitial(legalBMoves(), chessBoard, a)) return (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(0,1)+raw.substring(2,4)).replace("P", "");
-				else return (chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
+				if (mxjava.specifyInitial(legalBMoves(), chessBoard, a)) return moveMarker+(chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(0,1)+raw.substring(2,4)).replace("P", "");
+				else return moveMarker+(chessBoard[8-(Character.getNumericValue(a.charAt(1)))][Character.getNumericValue(a.charAt(0))-1].toUpperCase() + raw.substring(2,4)).replace("P", "");
 			}
 		}
 		return "";
