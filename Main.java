@@ -1035,7 +1035,7 @@ public class Main {
 		int displayR = 8-r;
 		for (int j=-1; j<=1; j+=2) {
 			try {//capture
-				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i<=48) {
+				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i<48) {
 					oldPiece=chessBoard[r+1][c+j];
 					if(oldPiece.equals(" ")) oldPiece = "";
 					chessBoard[r][c]=" ";
@@ -1048,23 +1048,8 @@ public class Main {
 					chessBoard[r+1][c+j]=oldPiece;
 				}
 			} catch (Exception e) {}
-			/*
-			try {//en passant
-				if (chessBoard[r][c+j].substring(0,1)=="P" && r==4) {
-					chessBoard[r][c]=" ";
-					chessBoard[r][c+j]=" ";
-					chessBoard[r+1][c+j]="p";
-					if (blackKingSafe() && pawnDoubleMove[c+j] && ((totalMoves-timePawnMoved[c+j])==0)) {
-						moves=moves+colNames[c]+displayR+colNames[(c+j)]+(displayR-1)+"x ";
-					}
-					chessBoard[r][c]="p";
-					chessBoard[r][c+j]="P";
-					chessBoard[r+1][c+j]=" ";
-				}
-			} catch (Exception e) {}
-			 */
 			try {//promotion && capture
-				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i>48) {
+				if (Character.isUpperCase(chessBoard[r+1][c+j].charAt(0)) && i>=48) {
 					String[] temp={"q","r","b","n"};
 					for (int k=0; k<4; k++) {
 						oldPiece=chessBoard[r+1][c+j];
@@ -1081,7 +1066,7 @@ public class Main {
 			} catch (Exception e) {}
 		}
 		try {//move one up
-			if (" ".equals(chessBoard[r+1][c]) && i<=48) {
+			if (" ".equals(chessBoard[r+1][c]) && i<48) {
 				oldPiece=chessBoard[r+1][c];
 				chessBoard[r][c]=" ";
 				chessBoard[r+1][c]="p";
@@ -1094,7 +1079,7 @@ public class Main {
 			}
 		} catch (Exception e) {}
 		try {//promotion && no capture
-			if (" ".equals(chessBoard[r+1][c]) && i>48) {
+			if (" ".equals(chessBoard[r+1][c]) && i>=48) {
 				String[] temp={"q","r","b","n"};
 				for (int k=0; k<4; k++) {
 					oldPiece=chessBoard[r+1][c];
