@@ -9,7 +9,7 @@ public class Main {
 	static ArrayList<Integer> WHITE_STATES_APPEARANCES = new ArrayList<>(); //t
 	static ArrayList<double[]> WHITE_CHOSEN_ACTION_COUNT = new ArrayList<>(); //n
 	static ArrayList<double[]> WHITE_WINS_FOR_ACTION = new ArrayList<>(); //w
-	
+
 	static ArrayList<double[]> BLACK_STATES = new ArrayList<>();
 	static ArrayList<Integer> BLACK_STATES_APPEARANCES = new ArrayList<>(); //t
 	static ArrayList<double[]> BLACK_CHOSEN_ACTION_COUNT = new ArrayList<>(); //n
@@ -81,20 +81,23 @@ public class Main {
 				if (mxjava.stateInDatabase(WHITE_STATES, convertToState(chessBoard))) {
 					int directory = mxjava.whereInDatabase(WHITE_STATES,convertToState(chessBoard));
 					WHITE_STATES_APPEARANCES.set(directory, WHITE_STATES_APPEARANCES.get(directory)+1);
+					WHITE_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(WHITE_CHOSEN_ACTION_COUNT.get(directory), action));
+
 				}
 				else {
 					WHITE_STATES.add(convertToState(chessBoard));
 					WHITE_STATES_APPEARANCES.add(1);
+					WHITE_CHOSEN_ACTION_COUNT.add(action);
 				}
-				WHITE_CHOSEN_ACTION_COUNT.add(action);
+
 
 				//MAKE THE MOVE
 				makeMove(move);
 				pureLog += (totalMoves/2 + 1) + ".";
 				pureLog += move+ " ";
 				if (debugOn) {
-				System.out.println(move);
-				printBoard(chessBoard);
+					System.out.println(move);
+					printBoard(chessBoard);
 				}
 			}
 			else if (totalMoves%2==1) {
@@ -107,19 +110,21 @@ public class Main {
 				if (mxjava.stateInDatabase(BLACK_STATES, convertToState(chessBoard))) {
 					int directory = mxjava.whereInDatabase(BLACK_STATES,convertToState(chessBoard));
 					BLACK_STATES_APPEARANCES.set(directory, BLACK_STATES_APPEARANCES.get(directory)+1);
+					BLACK_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(BLACK_CHOSEN_ACTION_COUNT.get(directory), action));
 				}
 				else {
 					BLACK_STATES.add(convertToState(chessBoard));
 					BLACK_STATES_APPEARANCES.add(1);
+					BLACK_CHOSEN_ACTION_COUNT.add(action);
 				}
-				BLACK_CHOSEN_ACTION_COUNT.add(action);
+
 
 				//MAKE THE MOVE
 				makeMove(move);
 				pureLog += move+ " ";
 				if (debugOn) {
-				System.out.println(move);
-				printBoard(chessBoard);
+					System.out.println(move);
+					printBoard(chessBoard);
 				}
 			}
 		}
@@ -132,7 +137,7 @@ public class Main {
 		printBoard(chessBoard);
 		System.out.println(PGN_GAME_LOG);
 		if (debugOn) System.out.println(pureLog);
-		
+
 		/* MACHINE LEARNING STARTS HERE.
 		 * [FUTURE MUSTS: We need to write it so that we only a) adds a new state to the database if it had not been seen before,
 		 * and change the database of actions taken accordingly. In the future, we will have certain 'libraries' to train the 
@@ -157,14 +162,14 @@ public class Main {
 		 * would yield a most favourable increase in rating? Possible, but training the rating would mean it follows the play style of
 		 * a certain chess engine...for now, a MCTS based engine system will be tested.
 		 */
-		
+
 		while (WHITE_STATES.size()>WHITE_CHOSEN_ACTION_COUNT.size()) {
 			WHITE_STATES.remove(WHITE_STATES.size()-1);
 		}
 		while (BLACK_STATES.size()>BLACK_CHOSEN_ACTION_COUNT.size()) {
 			BLACK_STATES.remove(BLACK_STATES.size()-1);
 		}
-		
+
 		/*//PRINT STATES + ACTIONS THAT WERE FED TO NEURAL NETWORK
 		System.out.println("WHITE STATES:");
 		for (int i = 0;i<WHITE_STATES.size();i++) {
@@ -182,7 +187,7 @@ public class Main {
 		for (int i = 0;i<BLACK_CHOSEN_ACTION_COUNT.size();i++) {
 			System.out.println(Arrays.toString(BLACK_CHOSEN_ACTION_COUNT.get(i)));
 		}
-		*/
+		 */
 	}
 
 	public static String[][] resetBoard() {
