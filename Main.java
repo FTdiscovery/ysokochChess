@@ -68,6 +68,11 @@ public class Main {
 		makeMove("f3f7");
 		// */
 
+		ArrayList<Integer> whiteMoves = new ArrayList<>();
+		ArrayList<Integer> blackMoves = new ArrayList<>();
+		ArrayList<double[]> whiteUpdateIfWin = new ArrayList<>();
+		ArrayList<double[]> blackUpdateIfWin = new ArrayList<>();
+		
 		//GENERATE RANDOM GAME.
 		int movesExchanged = 60;
 		while(totalMoves<movesExchanged*2 && gameStatus() == 5) {
@@ -82,14 +87,15 @@ public class Main {
 					int directory = mxjava.whereInDatabase(WHITE_STATES,convertToState(chessBoard));
 					WHITE_STATES_APPEARANCES.set(directory, WHITE_STATES_APPEARANCES.get(directory)+1);
 					WHITE_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(WHITE_CHOSEN_ACTION_COUNT.get(directory), action));
-
+					whiteMoves.add(directory);		
 				}
 				else {
+					whiteMoves.add(WHITE_STATES.size());
 					WHITE_STATES.add(convertToState(chessBoard));
 					WHITE_STATES_APPEARANCES.add(1);
 					WHITE_CHOSEN_ACTION_COUNT.add(action);
 				}
-
+				whiteUpdateIfWin.add(action);
 
 				//MAKE THE MOVE
 				makeMove(move);
@@ -111,12 +117,15 @@ public class Main {
 					int directory = mxjava.whereInDatabase(BLACK_STATES,convertToState(chessBoard));
 					BLACK_STATES_APPEARANCES.set(directory, BLACK_STATES_APPEARANCES.get(directory)+1);
 					BLACK_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(BLACK_CHOSEN_ACTION_COUNT.get(directory), action));
+					blackMoves.add(directory);
 				}
 				else {
+					blackMoves.add(BLACK_STATES.size());
 					BLACK_STATES.add(convertToState(chessBoard));
 					BLACK_STATES_APPEARANCES.add(1);
 					BLACK_CHOSEN_ACTION_COUNT.add(action);
 				}
+				blackUpdateIfWin.add(action);
 
 
 				//MAKE THE MOVE
@@ -169,8 +178,9 @@ public class Main {
 		while (BLACK_STATES.size()>BLACK_CHOSEN_ACTION_COUNT.size()) {
 			BLACK_STATES.remove(BLACK_STATES.size()-1);
 		}
+		System.out.println(WHITE_STATES.size() + " "+WHITE_CHOSEN_ACTION_COUNT.size()+" "+BLACK_STATES.size() + " "+BLACK_CHOSEN_ACTION_COUNT.size());
 
-		//PRINT STATES + ACTIONS THAT WERE FED TO NEURAL NETWORK
+		/*//PRINT STATES + ACTIONS THAT WERE FED TO NEURAL NETWORK
 		System.out.println("WHITE STATES:");
 		for (int i = 0;i<WHITE_STATES.size();i++) {
 			System.out.println(Arrays.toString(WHITE_STATES.get(i)));
@@ -187,7 +197,7 @@ public class Main {
 		for (int i = 0;i<BLACK_CHOSEN_ACTION_COUNT.size();i++) {
 			System.out.println(Arrays.toString(BLACK_CHOSEN_ACTION_COUNT.get(i)));
 		}
-		
+		 */
 	}
 
 	public static String[][] resetBoard() {
