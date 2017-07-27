@@ -73,7 +73,7 @@ public class Main {
 		ArrayList<double[]> whiteUpdateIfWin = new ArrayList<>();
 		ArrayList<double[]> blackUpdateIfWin = new ArrayList<>();
 
-		int simuls = 1;
+		int simuls = 5;
 		//GENERATE RANDOM GAME.
 		for (int i = 0;i<simuls ;i++) {
 			int movesExchanged = 60;
