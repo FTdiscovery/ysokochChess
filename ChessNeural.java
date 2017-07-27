@@ -2,8 +2,6 @@ package reinforcechess;
 
 import java.util.Arrays;
 
-import test.mxjava;
-
 public class ChessNeural {
 
 	double[][] synapse0;
@@ -36,6 +34,18 @@ public class ChessNeural {
 		finalSynapse = mxjava.synapseLayer(nodesPerLayer,OUTPUT_VALUES[0].length);
 		correct = 0;
 		learningSpeed = e;
+	}
+	
+	public void newSynapseWeights() {
+		
+		synapse0 = mxjava.synapseLayer(INPUT_VALUES[0].length,nodesPerLayer);
+		synapse1 = mxjava.synapseLayer(nodesPerLayer,nodesPerLayer);
+		synapse2 = mxjava.synapseLayer(nodesPerLayer,nodesPerLayer);
+		synapse3 = mxjava.synapseLayer(nodesPerLayer,nodesPerLayer);
+		synapse4 = mxjava.synapseLayer(nodesPerLayer,nodesPerLayer);
+		synapse5 = mxjava.synapseLayer(nodesPerLayer,nodesPerLayer);
+		synapse6 = mxjava.synapseLayer(nodesPerLayer,nodesPerLayer);
+		
 	}
 
 	public void trainNetwork(int c) {
