@@ -6,13 +6,13 @@ public class mxjava {
 
 	public static void main(String[] args) {
 		ArrayList<double[]> database = new ArrayList<>();
-		double[] one = {0,4,6,7};
+		double[] one = {0,4,6,7,6,5,1,5,4,5,1,6,4,5,2,67};
 		database.add(one);
 		database.add(one);
-		double[] two = {0,3,4,5};
+		double[] two = {0,3,4,5,8,9,0,2,5,1,2,3,4};
 		database.add(two);
 		
-		double[] states = {0,3,4,5};
+		double[] states = {0,3,4,5,8,9,0,2,5,1,2,3,4};
 		
 		System.out.println(stateInDatabase(database,states));
 		System.out.println(whereInDatabase(database,states));
@@ -33,6 +33,7 @@ public class mxjava {
 	}
 	
 	public static boolean sameState(double[] one, double[] two) {
+		if (one.length!=two.length) return false;
 		for (int i = 0;i<Math.min(one.length,two.length);i++) {
 			if (one[i]!=two[i]) { 
 				return false;
