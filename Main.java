@@ -170,7 +170,7 @@ public class Main {
 			BLACK_STATES.remove(BLACK_STATES.size()-1);
 		}
 
-		/*//PRINT STATES + ACTIONS THAT WERE FED TO NEURAL NETWORK
+		//PRINT STATES + ACTIONS THAT WERE FED TO NEURAL NETWORK
 		System.out.println("WHITE STATES:");
 		for (int i = 0;i<WHITE_STATES.size();i++) {
 			System.out.println(Arrays.toString(WHITE_STATES.get(i)));
@@ -187,7 +187,7 @@ public class Main {
 		for (int i = 0;i<BLACK_CHOSEN_ACTION_COUNT.size();i++) {
 			System.out.println(Arrays.toString(BLACK_CHOSEN_ACTION_COUNT.get(i)));
 		}
-		 */
+		
 	}
 
 	public static String[][] resetBoard() {
