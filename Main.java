@@ -6,14 +6,17 @@ import java.util.Arrays;
 public class Main {
 
 	static ArrayList<double[]> WHITE_STATES = new ArrayList<>(); 
-	static ArrayList<Integer> WHITE_STATES_APPEARANCES = new ArrayList<>(); //t
+	static ArrayList<Double> WHITE_STATES_APPEARANCES = new ArrayList<>(); //t
 	static ArrayList<double[]> WHITE_CHOSEN_ACTION_COUNT = new ArrayList<>(); //n
 	static ArrayList<double[]> WHITE_WINS_FOR_ACTION = new ArrayList<>(); //w
 
 	static ArrayList<double[]> BLACK_STATES = new ArrayList<>();
-	static ArrayList<Integer> BLACK_STATES_APPEARANCES = new ArrayList<>(); //t
+	static ArrayList<Double> BLACK_STATES_APPEARANCES = new ArrayList<>(); //t
 	static ArrayList<double[]> BLACK_CHOSEN_ACTION_COUNT = new ArrayList<>(); //n
 	static ArrayList<double[]> BLACK_WINS_FOR_ACTION = new ArrayList<>(); //w
+
+	static ArrayList<double[]> WHITE_UCT1 = new ArrayList<>();
+	static ArrayList<double[]> BLACK_UCT1 = new ArrayList<>();
 
 	static String PGN_GAME_LOG = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
 
@@ -72,143 +75,190 @@ public class Main {
 		ArrayList<Integer> blackMoves = new ArrayList<>();
 		ArrayList<double[]> whiteUpdateIfWin = new ArrayList<>();
 		ArrayList<double[]> blackUpdateIfWin = new ArrayList<>();
+		double[] blank = new double[105];
 
 		int simuls = 5;
-		//GENERATE RANDOM GAME.
-		for (int i = 0;i<simuls ;i++) {
-			int movesExchanged = 60;
-			totalMoves = 0;
-			chessBoard = resetBoard();
-			PGN_GAME_LOG = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
-			while(totalMoves<movesExchanged*2 && gameStatus() == 5) {
-				if (totalMoves%2==0) {
-					ChessNeural wBrain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
-					String move = mxjava.computerMove(wBrain.predict(convertToState(chessBoard)), legalWMoves());
-					double[] action = mxjava.computerActionArray(wBrain.predict(convertToState(chessBoard)), legalWMoves());
+		for (int x = 0;x<simuls;x++) {
 
-					//ADD THE STATES AND ACTION INTO THE GAME LOG
-					if (mxjava.stateInDatabase(WHITE_STATES, convertToState(chessBoard))) {
-						int directory = mxjava.whereInDatabase(WHITE_STATES,convertToState(chessBoard));
-						WHITE_STATES_APPEARANCES.set(directory, WHITE_STATES_APPEARANCES.get(directory)+1);
-						WHITE_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(WHITE_CHOSEN_ACTION_COUNT.get(directory), action));
-						whiteMoves.add(directory);		
-					}
-					else {
-						whiteMoves.add(WHITE_STATES.size());
-						WHITE_STATES.add(convertToState(chessBoard));
-						WHITE_STATES_APPEARANCES.add(1);
-						WHITE_CHOSEN_ACTION_COUNT.add(action);
-					}
-					whiteUpdateIfWin.add(action);
+			int gamesPerSimul = 10;
+			//GENERATE RANDOM GAME.
+			for (int i = 0;i<gamesPerSimul ;i++) {
+				int movesExchanged = 60;
+				totalMoves = 0;
+				chessBoard = resetBoard();
+				PGN_GAME_LOG = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
+				while(totalMoves<movesExchanged*2 && gameStatus() == 5) {
+					if (totalMoves%2==0) {
+						ChessNeural wBrain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
+						String move = mxjava.computerMove(wBrain.predict(convertToState(chessBoard)), legalWMoves());
+						double[] action = mxjava.computerActionArray(wBrain.predict(convertToState(chessBoard)), legalWMoves());
 
-					//MAKE THE MOVE
-					makeMove(move);
-					pureLog += (totalMoves/2 + 1) + ".";
-					pureLog += move+ " ";
-					if (debugOn) {
-						System.out.println(move);
-						printBoard(chessBoard);
+						//ADD THE STATES AND ACTION INTO THE GAME LOG
+						if (mxjava.stateInDatabase(WHITE_STATES, convertToState(chessBoard))) {
+							int directory = mxjava.whereInDatabase(WHITE_STATES,convertToState(chessBoard));
+							WHITE_STATES_APPEARANCES.set(directory, WHITE_STATES_APPEARANCES.get(directory)+1);
+							WHITE_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(WHITE_CHOSEN_ACTION_COUNT.get(directory), action));
+							whiteMoves.add(directory);		
+						}
+						else {
+							whiteMoves.add(WHITE_STATES.size());
+							WHITE_STATES.add(convertToState(chessBoard));
+							WHITE_STATES_APPEARANCES.add((double) 1);
+							WHITE_CHOSEN_ACTION_COUNT.add(action);
+							WHITE_WINS_FOR_ACTION.add(blank);
+						}
+						whiteUpdateIfWin.add(action);
+
+						//MAKE THE MOVE
+						makeMove(move);
+						pureLog += (totalMoves/2 + 1) + ".";
+						pureLog += move+ " ";
+						if (debugOn) {
+							System.out.println(move);
+							printBoard(chessBoard);
+						}
+					}
+					else if (totalMoves%2==1) {
+
+						ChessNeural bBrain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
+						String move = mxjava.computerMove(bBrain.predict(convertToState(chessBoard)), legalBMoves());
+						double[] action = mxjava.computerActionArray(bBrain.predict(convertToState(chessBoard)), legalBMoves());
+
+						//ADD THE STATES AND ACTION INTO THE GAME LOG
+						if (mxjava.stateInDatabase(BLACK_STATES, convertToState(chessBoard))) {
+							int directory = mxjava.whereInDatabase(BLACK_STATES,convertToState(chessBoard));
+							BLACK_STATES_APPEARANCES.set(directory, BLACK_STATES_APPEARANCES.get(directory)+1);
+							BLACK_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(BLACK_CHOSEN_ACTION_COUNT.get(directory), action));
+							blackMoves.add(directory);
+						}
+						else {
+							blackMoves.add(BLACK_STATES.size());
+							BLACK_STATES.add(convertToState(chessBoard));
+							BLACK_STATES_APPEARANCES.add((double)1);
+							BLACK_CHOSEN_ACTION_COUNT.add(action);
+							BLACK_WINS_FOR_ACTION.add(blank);
+						}
+						blackUpdateIfWin.add(action);
+
+
+						//MAKE THE MOVE
+						makeMove(move);
+						pureLog += move+ " ";
+						if (debugOn) {
+							System.out.println(move);
+							printBoard(chessBoard);
+						}
 					}
 				}
-				else if (totalMoves%2==1) {
+				//*/
 
-					ChessNeural bBrain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
-					String move = mxjava.computerMove(bBrain.predict(convertToState(chessBoard)), legalBMoves());
-					double[] action = mxjava.computerActionArray(bBrain.predict(convertToState(chessBoard)), legalBMoves());
+				if (gameStatus() == 0) PGN_GAME_LOG+= "0.5-0.5";
+				else if (gameStatus() == 1) PGN_GAME_LOG += "1-0";
+				else if (gameStatus() == -1) PGN_GAME_LOG += "0-1";
 
-					//ADD THE STATES AND ACTION INTO THE GAME LOG
-					if (mxjava.stateInDatabase(BLACK_STATES, convertToState(chessBoard))) {
-						int directory = mxjava.whereInDatabase(BLACK_STATES,convertToState(chessBoard));
-						BLACK_STATES_APPEARANCES.set(directory, BLACK_STATES_APPEARANCES.get(directory)+1);
-						BLACK_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(BLACK_CHOSEN_ACTION_COUNT.get(directory), action));
-						blackMoves.add(directory);
+				printBoard(chessBoard);
+				System.out.println(PGN_GAME_LOG);
+				if (debugOn) System.out.println(pureLog);
+
+				/* MACHINE LEARNING STARTS HERE.
+				 * [FUTURE MUSTS: We need to write it so that we only a) adds a new state to the database if it had not been seen before,
+				 * and change the database of actions taken accordingly. In the future, we will have certain 'libraries' to train the 
+				 * computer on, and certain 'rating' methods for each student to use...based on real games, book openings...etc. 
+				 * Perhaps will use alpha beta pruning for end game.]
+				 * 
+				 * Firstly, we need to make sure that one state only corresponds to one action in each game. Thus, we make sure the size of the
+				 * State ArrayList is the same as the Action ArrayList.
+				 * 
+				 * We count the appearances of each state in the database, but since the ArrayList only shows the game log, this would not be
+				 * necessary in our calculations.
+				 * 
+				 * Then, we back propagate the moves, with the likelihood of the moves with the formula w/n + c([sqrt(ln t/n)], where
+				 * w = total wins for the chosen action
+				 * n = total times the action was chosen
+				 * t = sum of all n, the amount of times the state of the chessboard has been seen.
+				 * c = exploration parameter, which can be edited...but is currently sqrt(2).
+				 * [This formula is not finalized, we can also use RAVE, but this is the current idea.]
+				 * 
+				 * THOUGHTS TO CONSIDER: Should there be a separate neural network that could make evaluations of each position, so that
+				 * the computer knows when to resign? Or should the computer rate every single possible move and choose to play the move that
+				 * would yield a most favourable increase in rating? Possible, but training the rating would mean it follows the play style of
+				 * a certain chess engine...for now, a MCTS based engine system will be tested.
+				 */
+
+				while (WHITE_STATES.size()>WHITE_CHOSEN_ACTION_COUNT.size()) {
+					WHITE_STATES.remove(WHITE_STATES.size()-1);
+				}
+				while (BLACK_STATES.size()>BLACK_CHOSEN_ACTION_COUNT.size()) {
+					BLACK_STATES.remove(BLACK_STATES.size()-1);
+				}
+
+
+				//UPDATE THE WINS
+				for (int k = 0;k<whiteMoves.size();k++) {
+					if(gameStatus()==1) {
+						WHITE_WINS_FOR_ACTION.set(whiteMoves.get(k), mxjava.addVectors(WHITE_WINS_FOR_ACTION.get(k),whiteUpdateIfWin.get(k)));
 					}
-					else {
-						blackMoves.add(BLACK_STATES.size());
-						BLACK_STATES.add(convertToState(chessBoard));
-						BLACK_STATES_APPEARANCES.add(1);
-						BLACK_CHOSEN_ACTION_COUNT.add(action);
-					}
-					blackUpdateIfWin.add(action);
-
-
-					//MAKE THE MOVE
-					makeMove(move);
-					pureLog += move+ " ";
-					if (debugOn) {
-						System.out.println(move);
-						printBoard(chessBoard);
+					else if (gameStatus()==0 || gameStatus() ==5) {
+						WHITE_WINS_FOR_ACTION.set(whiteMoves.get(k),mxjava.addVectors(WHITE_WINS_FOR_ACTION.get(k),mxjava.scale(whiteUpdateIfWin.get(k), 0.5)));
 					}
 				}
-			}
-			//*/
+				for (int k = 0;k<blackMoves.size()-1;k++) {
+					if(gameStatus()==-1) {
+						BLACK_WINS_FOR_ACTION.set(blackMoves.get(k), mxjava.addVectors(BLACK_WINS_FOR_ACTION.get(k),blackUpdateIfWin.get(k)));
+					}
+					else if (gameStatus()==0 || gameStatus() ==5) {
+						BLACK_WINS_FOR_ACTION.set(blackMoves.get(k), mxjava.addVectors(BLACK_WINS_FOR_ACTION.get(k),mxjava.scale(blackUpdateIfWin.get(k),0.5)));
 
-			if (gameStatus() == 0) PGN_GAME_LOG+= "0.5-0.5";
-			else if (gameStatus() == 1) PGN_GAME_LOG += "1-0";
-			else if (gameStatus() == -1) PGN_GAME_LOG += "0-1";
+					}
+				}
+				if (!debugOn) {
+					//System.out.println(WHITE_STATES.size() + " "+WHITE_CHOSEN_ACTION_COUNT.size()+" "+BLACK_STATES.size() + " "+BLACK_CHOSEN_ACTION_COUNT.size());
+					System.out.println(gameStatus());
+					System.out.println(Arrays.toString(whiteMoves.toArray()));
+					System.out.println(Arrays.toString(blackMoves.toArray()));
+					System.out.println(Arrays.toString(WHITE_CHOSEN_ACTION_COUNT.get(0)));
+					System.out.println(Arrays.toString(WHITE_WINS_FOR_ACTION.get(0)));
+				}
 
-			printBoard(chessBoard);
-			System.out.println(PGN_GAME_LOG);
-			if (debugOn) System.out.println(pureLog);
-
-			/* MACHINE LEARNING STARTS HERE.
-			 * [FUTURE MUSTS: We need to write it so that we only a) adds a new state to the database if it had not been seen before,
-			 * and change the database of actions taken accordingly. In the future, we will have certain 'libraries' to train the 
-			 * computer on, and certain 'rating' methods for each student to use...based on real games, book openings...etc. 
-			 * Perhaps will use alpha beta pruning for end game.]
-			 * 
-			 * Firstly, we need to make sure that one state only corresponds to one action in each game. Thus, we make sure the size of the
-			 * State ArrayList is the same as the Action ArrayList.
-			 * 
-			 * We count the appearances of each state in the database, but since the ArrayList only shows the game log, this would not be
-			 * necessary in our calculations.
-			 * 
-			 * Then, we back propagate the moves, with the likelihood of the moves with the formula w/n + c([sqrt(t)]/n), where
-			 * w = total wins for the chosen action
-			 * n = total times the action was chosen
-			 * t = sum of all n, the amount of times the state of the chessboard has been seen.
-			 * c = exploration parameter, which can be edited...but is currently sqrt(2).
-			 * [This formula is not finalized, we can also use RAVE, but this is the current idea.]
-			 * 
-			 * THOUGHTS TO CONSIDER: Should there be a separate neural network that could make evaluations of each position, so that
-			 * the computer knows when to resign? Or should the computer rate every single possible move and choose to play the move that
-			 * would yield a most favourable increase in rating? Possible, but training the rating would mean it follows the play style of
-			 * a certain chess engine...for now, a MCTS based engine system will be tested.
-			 */
-
-			while (WHITE_STATES.size()>WHITE_CHOSEN_ACTION_COUNT.size()) {
-				WHITE_STATES.remove(WHITE_STATES.size()-1);
-			}
-			while (BLACK_STATES.size()>BLACK_CHOSEN_ACTION_COUNT.size()) {
-				BLACK_STATES.remove(BLACK_STATES.size()-1);
-			}
-			if (!debugOn) {
-				System.out.println(WHITE_STATES.size() + " "+WHITE_CHOSEN_ACTION_COUNT.size()+" "+BLACK_STATES.size() + " "+BLACK_CHOSEN_ACTION_COUNT.size());
-				System.out.println(Arrays.toString(whiteMoves.toArray()));
-				System.out.println(Arrays.toString(blackMoves.toArray()));
+				whiteMoves.clear();
+				blackMoves.clear();
+				whiteUpdateIfWin.clear();
+				blackUpdateIfWin.clear();
 			}
 
-			/*//PRINT STATES + ACTIONS THAT WERE FED TO NEURAL NETWORK
-			System.out.println("WHITE STATES:");
-			for (int j = 0;i<WHITE_STATES.size();i++) {
-				System.out.println(Arrays.toString(WHITE_STATES.get(i)));
+			//TRAIN THE DATA ONCE IT'S DONE.
+			if (debugOn) {
+				System.out.println("\nAPPEARANCES\n---------");
+				print2DArrayList(WHITE_CHOSEN_ACTION_COUNT,5);
+				System.out.println("\nWINS PER ACTION\n---------");
+				print2DArrayList(WHITE_WINS_FOR_ACTION,5);
 			}
-			System.out.println("WHITE ACTIONS:");
-			for (int j = 0;i<WHITE_CHOSEN_ACTION_COUNT.size();i++) {
-				System.out.println(Arrays.toString(WHITE_CHOSEN_ACTION_COUNT.get(i)));
+
+			//CREATE UCT1 FOR EACH STATE.
+			for (int i = 0;i<WHITE_STATES.size();i++) {
+				WHITE_UCT1.add(mxjava.UCT1Array(WHITE_WINS_FOR_ACTION.get(i), WHITE_CHOSEN_ACTION_COUNT.get(i), WHITE_STATES_APPEARANCES.get(i), Math.sqrt(2),0.3,false));
 			}
-			System.out.println("BLACK STATES:");
-			for (int j = 0;i<BLACK_STATES.size();i++) {
-				System.out.println(Arrays.toString(BLACK_STATES.get(i)));
+			for (int i = 0;i<BLACK_STATES.size();i++) {
+				BLACK_UCT1.add(mxjava.UCT1Array(BLACK_WINS_FOR_ACTION.get(i), BLACK_CHOSEN_ACTION_COUNT.get(i), BLACK_STATES_APPEARANCES.get(i), Math.sqrt(2),0.3,false));
 			}
-			System.out.println("BLACK ACTIONS:");
-			for (int j = 0;i<BLACK_CHOSEN_ACTION_COUNT.size();i++) {
-				System.out.println(Arrays.toString(BLACK_CHOSEN_ACTION_COUNT.get(i)));
+			
+			//CHANGE THE ARRAYLIST TO AN ARRAY, AND TRAIN THE NEURAL NETWORK.
+			
+			
+			if (debugOn) {
+				System.out.println("\nUCT1\n---------");
+				print2DArrayList(WHITE_UCT1,15);
+				System.out.println("\nUCT2\n---------");
+				print2DArrayList(BLACK_UCT1,15);
 			}
-			*/
 		}
+	}
 
-
+	public static void print2DArrayList(ArrayList<double[]> ab, int c) {
+		for (int i = 0;i<Math.min(c, ab.size());i++) {
+			double[] newArray = ab.get(i);
+			System.out.println(Arrays.toString(newArray));
+		}
 	}
 
 	public static String[][] resetBoard() {
