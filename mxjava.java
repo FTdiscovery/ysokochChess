@@ -11,16 +11,16 @@ public class mxjava {
 		database.add(one);
 		double[] two = {0,3,4,5,8,9,0,2,5,1,2,3,4};
 		database.add(two);
-		
+
 		double[] states = {0,3,4,5,8,9,0,2,5,1,2,3,4};
-		
+
 		System.out.println(stateInDatabase(database,states));
 		System.out.println(whereInDatabase(database,states));
-		
+
 		System.out.println(1/0.0);
-		
+
 	}
-	
+
 	public static double[] UCT1Array(double[] w, double[] n, double t, double constant, double scale, boolean infinity) {
 		double[] newArray = new double[w.length];
 		for (int i = 0;i<newArray.length;i++) {
@@ -28,7 +28,7 @@ public class mxjava {
 		}
 		return newArray;
 	}
-	
+
 	public static double UCT1(double w, double n, double t, double constant, double scale, boolean infinity) {
 		if (n!=0) {
 			double winRatio = w/n;
@@ -40,24 +40,25 @@ public class mxjava {
 			if (infinity) return 1;
 			else return 0;
 		}
-		
+
 	}
-	
-	
+
+
 	public static boolean stateInDatabase(ArrayList<double[]> allStates, double[] states) {
+		if (allStates.size()==0) return false;
 		for (int i = 0; i<allStates.size();i++) {
 			if (sameState(allStates.get(i),states)) return true;
 		}
 		return false;
 	}
-	
+
 	public static int whereInDatabase(ArrayList<double[]> allStates, double[] states) {
 		for (int i = 0; i<allStates.size();i++) {
 			if (sameState(allStates.get(i),states)) return i;
 		}
 		return -1;
 	}
-	
+
 	public static boolean sameState(double[] one, double[] two) {
 		if (one.length!=two.length) return false;
 		for (int i = 0;i<Math.min(one.length,two.length);i++) {
@@ -67,7 +68,7 @@ public class mxjava {
 		}
 		return true;
 	}
-	
+
 	//DUPLICATE MOVES BY SAME PIECE
 	public static boolean specifyInitial(String[] moves, String[][] chessBoard, String place) {
 		for (int i = 0;i<moves.length;i++) {
@@ -89,12 +90,63 @@ public class mxjava {
 		return false;
 	}
 	//FOR MAKING MOVES
+	public static int max(double[] values) {
+		int max = 0;
+		for (int i = 0;i<values.length;i++) {
+			if (values[i]>values[max]) max=i;
+		}
+		return max;
+	}
 	public static int numberDirectory(double[] values, String[] moves) {
 		int max = 0;
 		for (int i = 1;i<moves.length;i++) {
 			if (values[i]>values[max]) { max = i; }
 		}
 		return max;
+	}
+
+	public static double sumOfArrayParts(double[] array) {
+		double sum = 0;
+		for (int i = 0;i<array.length;i++) {
+			sum += array[i];
+		}
+		return (int) sum;
+	}
+
+	public static void whereInActionArray(String[] moves, String move, int possibleLegal) {
+		for (int i = 0;i<moves.length;i++) {
+			if (!moves[i].equals("O-O") && moves[i].length()>3) {
+				System.out.println(moves[i].substring(0,4));
+				if (moves[i].substring(0,4).equals(move.substring(0,4))) System.out.println(i);
+			}
+		}
+	}
+	public static double[] action(String[] moves, String move, int possibleLegal) {
+		double[] actionArray = new double[possibleLegal];
+		for (int i = 0;i<moves.length;i++) {
+			if (move.length()>4) {
+				if (move.substring(4,5).equals("s") || move.substring(4,5).equals("=")) {
+					if (moves[i].equals(move)) { actionArray[i]=1;}
+				}
+			}
+			else if (!moves[i].equals("O-O") && moves[i].length()>3) {
+				if (moves[i].substring(0,4).equals(move)) { actionArray[i]=1;}
+				else actionArray[i] = 0;
+			}
+			else actionArray[i] = 0;
+		}
+		if (sumOfArrayParts(actionArray)!=1) System.out.println("error...");
+		return actionArray;
+	}
+
+	public static double[] castleAction(String[] moves, String move, int possibleLegal) {
+		double[] actionArray = new double[possibleLegal];
+		for (int i = 0;i<moves.length;i++) {
+			if (moves[i].substring(0,3).equals(move)) { actionArray[i]=1;}
+			else actionArray[i] = 0;
+		}
+		if (sumOfArrayParts(actionArray)!=1) System.out.println("error...");
+		return actionArray;
 	}
 
 	public static String computerMove(double[] values, String[] moves) {
@@ -167,7 +219,7 @@ public class mxjava {
 		}
 		return result;
 	}
-	
+
 	public static double[] addVectors(double[] first, double[] second) {
 		double[] result = new double[first.length];
 		for (int i = 0;i<result.length;i++) {
@@ -175,7 +227,7 @@ public class mxjava {
 		}
 		return result;
 	}
-	
+
 	public static double[] scale(double[] array, double scale) {
 		double[] result = new double[array.length];
 		for (int i=0;i<array.length;i++) {
