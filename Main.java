@@ -1,5 +1,9 @@
 package reinforcechess;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -17,6 +21,10 @@ public class Main {
 
 	static ArrayList<double[]> WHITE_UCT1 = new ArrayList<>();
 	static ArrayList<double[]> BLACK_UCT1 = new ArrayList<>();
+
+	static ArrayList<String[]> library = new ArrayList<>();
+
+	static int totalLegalMovesPerPosition = 80;
 
 	static String PGN_GAME_LOG = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
 
@@ -47,49 +55,241 @@ public class Main {
 	static String pureLog = "";
 	static boolean debugOn = false;
 
-	public static void main(String[] args) {
+	/* NOW THAT THE COMPUTER CAN PLAY GAMES WITH ITSELF, IT NEEDS TO FIND CERTAIN BOOKS TO PRETRAIN
+	 * 
+	 * We take advantage of the files that exist on the computer, and then train it before the computer tries reinforcement learning.
+	 * :)
+	 */
+	static String[] books = {"polgar"};
+	static String documents = System.getProperty ("user.home") + "/Documents/Procrastination Box/Chess Books/";
+
+
+	public static void main(String[] args) throws IOException {
 
 		double[][] normalState = new double[1][384]; //fed input. blank at the moment in order for initialization of the neural network
-		double[][] moveOutput = new double[1][105]; // fed output. blank of the moment in order for initialization of the neural network
-		int neuronsPerHiddenLayer = 100;
+		double[][] moveOutput = new double[1][totalLegalMovesPerPosition]; // fed output. blank of the moment in order for initialization of the neural network
+		int neuronsPerHiddenLayer = 450;
 		double learningRate = 0.01;
+		
+		TwoLayerNeuralNetwork wBrain = new TwoLayerNeuralNetwork(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
+		TwoLayerNeuralNetwork bBrain = new TwoLayerNeuralNetwork(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
 
-		/* Fool's Mate
-		makeMove("f2f3");
-		makeMove("e7e5");
-		makeMove("g2g4");
-		makeMove("d8h4");
-	    //*/
+		
+		//PRE REINFORCEMENT TRAINING
+		for (int i = 0;i<books.length;i++) {
+			FileReader book = new FileReader (documents + books[i]+".txt");
+			BufferedReader buffer = new BufferedReader(book);
+			//Read the files...
+			String word;
+			ArrayList<String> game = new ArrayList<>();
+			while ((word = buffer.readLine()) != null) {
+				game.add(word);
+			}
+			String [] addToLibrary = game.toArray(new String[game.size()]);
+			library.add(addToLibrary);
+		}
+		if (debugOn) {
+			for (int i = 0;i<library.size();i++) {
+				System.out.println(Arrays.toString(library.get(i)));
+			}
+		}
 
-		/*Scholar's Mate
-		makeMove("e2e4");
-		makeMove("e7e5");
-		makeMove("f1c4");
-		makeMove("b8a6");
-		makeMove("d1f3");
-		makeMove("h7h5");
-		makeMove("f3f7");
-		// */
+		//play the games
+		for (int i = 0;i<library.size();i++) {
+			ArrayList<Integer> whiteMoves = new ArrayList<>();
+			ArrayList<Integer> blackMoves = new ArrayList<>();
+			ArrayList<double[]> whiteUpdateIfWin = new ArrayList<>();
+			ArrayList<double[]> blackUpdateIfWin = new ArrayList<>();
+			double[] blank = new double[totalLegalMovesPerPosition];
 
+
+			for(int j = 0;j<library.get(i).length;j++) {
+				String move = library.get(i)[j];
+				//Save everything into the moves.
+				if (totalMoves%2==0) {
+					if (mxjava.stateInDatabase(WHITE_STATES, convertToState(chessBoard))) {
+						double[] action;
+						if (move.length()>=4) {
+							action = mxjava.action(legalWMoves(), move, totalLegalMovesPerPosition);
+						}
+						else {
+							action = mxjava.castleAction(legalWMoves(), move, totalLegalMovesPerPosition);
+						}
+						int directory = mxjava.whereInDatabase(WHITE_STATES,convertToState(chessBoard));
+						WHITE_STATES_APPEARANCES.set(directory, WHITE_STATES_APPEARANCES.get(directory)+1);
+						WHITE_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(WHITE_CHOSEN_ACTION_COUNT.get(directory), action));
+						whiteMoves.add(directory);	
+						if (!debugOn) System.out.println(Arrays.toString(action));
+						whiteUpdateIfWin.add(action);
+					}
+					else {
+						double[] action;
+						if (move.length()>=4) {
+							action = mxjava.action(legalWMoves(), move, totalLegalMovesPerPosition);
+						}
+						else {
+							action = mxjava.castleAction(legalWMoves(), move, totalLegalMovesPerPosition);
+						}
+						whiteMoves.add(WHITE_STATES.size());
+						WHITE_STATES.add(convertToState(chessBoard));
+						WHITE_STATES_APPEARANCES.add((double) 1);
+						WHITE_CHOSEN_ACTION_COUNT.add(action);
+						WHITE_WINS_FOR_ACTION.add(blank);
+						if (!debugOn) System.out.println(Arrays.toString(action));
+						whiteUpdateIfWin.add(action);
+					}
+
+				}
+				else {
+					if (mxjava.stateInDatabase(BLACK_STATES, convertToState(chessBoard))) {
+						double[] action;
+
+						if (move.length()>=4) {
+							action = mxjava.action(legalBMoves(), move, totalLegalMovesPerPosition);
+						}
+						else {
+							action = mxjava.castleAction(legalBMoves(), move, totalLegalMovesPerPosition);
+						}
+						int directory = mxjava.whereInDatabase(BLACK_STATES,convertToState(chessBoard));
+						BLACK_STATES_APPEARANCES.set(directory, BLACK_STATES_APPEARANCES.get(directory)+1);
+						BLACK_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(BLACK_CHOSEN_ACTION_COUNT.get(directory), action));
+						blackMoves.add(directory);
+						if (!debugOn) System.out.println(Arrays.toString(action));
+						blackUpdateIfWin.add(action);
+					}
+					else {
+						double[] action;
+						if (move.length()>=4) {
+							action = mxjava.action(legalBMoves(), move, totalLegalMovesPerPosition);
+						}
+						else {
+							action = mxjava.castleAction(legalBMoves(), move, totalLegalMovesPerPosition);
+						}
+						blackMoves.add(BLACK_STATES.size());
+						BLACK_STATES.add(convertToState(chessBoard));
+						BLACK_STATES_APPEARANCES.add((double)1);
+						BLACK_CHOSEN_ACTION_COUNT.add(action);
+						BLACK_WINS_FOR_ACTION.add(blank);
+						if (!debugOn) System.out.println(Arrays.toString(action));
+						blackUpdateIfWin.add(action);
+					}
+				}
+				//Make the Move
+				if (debugOn) { System.out.println(Arrays.toString(legalWMoves())); System.out.println(Arrays.toString(legalBMoves())); }
+				makeMove(move);
+				printBoard(chessBoard);
+			}
+			
+			//Game is finished.
+			while (WHITE_STATES.size()>WHITE_CHOSEN_ACTION_COUNT.size()) {
+				WHITE_STATES.remove(WHITE_STATES.size()-1);
+			}
+			while (BLACK_STATES.size()>BLACK_CHOSEN_ACTION_COUNT.size()) {
+				BLACK_STATES.remove(BLACK_STATES.size()-1);
+			}
+			
+			//UPDATE THE WINS
+			for (int k = 0;k<whiteMoves.size();k++) {
+				if(gameStatus()==1) {
+					int directory = whiteMoves.get(k);
+					WHITE_WINS_FOR_ACTION.set(whiteMoves.get(k), mxjava.addVectors(WHITE_WINS_FOR_ACTION.get(directory),whiteUpdateIfWin.get(k)));
+				}
+				else if (gameStatus()==0 || gameStatus() ==5) {
+					int directory = whiteMoves.get(k);
+					WHITE_WINS_FOR_ACTION.set(directory,mxjava.addVectors(WHITE_WINS_FOR_ACTION.get(directory),mxjava.scale(whiteUpdateIfWin.get(k), 0.5)));
+				}
+			}
+			for (int k = 0;k<blackMoves.size()-1;k++) {
+				if(gameStatus()==-1) {
+					int directory = blackMoves.get(k);
+					BLACK_WINS_FOR_ACTION.set(blackMoves.get(k), mxjava.addVectors(BLACK_WINS_FOR_ACTION.get(directory),blackUpdateIfWin.get(k)));
+				}
+				else if (gameStatus()==0 || gameStatus() ==5) {
+					int directory = blackMoves.get(k);
+					BLACK_WINS_FOR_ACTION.set(blackMoves.get(k), mxjava.addVectors(BLACK_WINS_FOR_ACTION.get(directory),mxjava.scale(blackUpdateIfWin.get(k),0.5)));
+
+				}
+			}
+			whiteMoves.clear();
+			blackMoves.clear();
+			whiteUpdateIfWin.clear();
+			blackUpdateIfWin.clear();
+
+			//TRAIN THE DATA ONCE IT'S DONE.
+			if (!debugOn) {
+				System.out.println("\nAPPEARANCES\n---------");
+				print2DArrayList(WHITE_CHOSEN_ACTION_COUNT,5);
+				System.out.println("\nWINS PER ACTION\n---------");
+				print2DArrayList(WHITE_WINS_FOR_ACTION,5);
+			}
+
+			WHITE_UCT1.clear();
+			BLACK_UCT1.clear();
+			//CREATE UCT1 FOR EACH STATE.
+
+			for (int k = 0;k<WHITE_STATES.size();k++) {
+				WHITE_UCT1.add(mxjava.UCT1Array(WHITE_WINS_FOR_ACTION.get(k), WHITE_CHOSEN_ACTION_COUNT.get(k), WHITE_STATES_APPEARANCES.get(k), Math.sqrt(2),0.8,false));
+			}
+			for (int k = 0;k<BLACK_STATES.size();k++) {
+				BLACK_UCT1.add(mxjava.UCT1Array(BLACK_WINS_FOR_ACTION.get(k), BLACK_CHOSEN_ACTION_COUNT.get(k), BLACK_STATES_APPEARANCES.get(k), Math.sqrt(2),0.8,false));
+			}
+
+
+			//CHANGE THE ARRAYLIST TO AN ARRAY, AND TRAIN THE NEURAL NETWORK.
+			double[][] whiteTrainingInput = new double[WHITE_STATES.size()][WHITE_STATES.get(0).length];
+			double[][] whiteTrainingOutput = new double[WHITE_UCT1.size()][WHITE_UCT1.get(0).length];
+			double[][] blackTrainingInput = new double[BLACK_STATES.size()][BLACK_STATES.get(0).length];
+			double[][] blackTrainingOutput = new double[BLACK_UCT1.size()][BLACK_UCT1.get(0).length];
+
+			for (int k = 0;k<WHITE_STATES.size();k++) {
+				whiteTrainingInput[k] = WHITE_STATES.get(k);
+			}
+			for (int k = 0;k<WHITE_UCT1.size();k++) {
+				whiteTrainingOutput[k] = WHITE_UCT1.get(k);
+			}
+			for (int k = 0;k<BLACK_STATES.size();k++) {
+				blackTrainingInput[k] = BLACK_STATES.get(k);
+			}
+			for (int k = 0;k<BLACK_UCT1.size();k++) {
+				blackTrainingOutput[k] = BLACK_UCT1.get(k);
+			}
+			wBrain.INPUT_VALUES = whiteTrainingInput;
+			wBrain.OUTPUT_VALUES = whiteTrainingOutput;
+			bBrain.INPUT_VALUES = blackTrainingInput;
+			bBrain.OUTPUT_VALUES = blackTrainingOutput;
+
+			wBrain.trainNetwork(1500);
+			bBrain.trainNetwork(1500);
+			
+			print2DArrayList(WHITE_UCT1,5);
+			System.out.println("\n hmm.");
+			print2DArray(wBrain.OUTPUT_VALUES,5);
+			resetBoard();
+			System.out.println("\n"+Arrays.toString(wBrain.predict(convertToState(chessBoard))));
+			System.out.println(mxjava.max(wBrain.predict(convertToState(chessBoard))));
+		}
+
+		
+		//Start Reinforcement Learning
 		ArrayList<Integer> whiteMoves = new ArrayList<>();
 		ArrayList<Integer> blackMoves = new ArrayList<>();
 		ArrayList<double[]> whiteUpdateIfWin = new ArrayList<>();
 		ArrayList<double[]> blackUpdateIfWin = new ArrayList<>();
-		double[] blank = new double[105];
+		double[] blank = new double[totalLegalMovesPerPosition];
 
-		int simuls = 5;
-		for (int x = 0;x<simuls;x++) {
+		int simuls = 1;
+		for (int x = 1;x<=simuls;x++) {
 
-			int gamesPerSimul = 10;
+			int gamesPerSimul = (x==simuls)? 1 : 2;
 			//GENERATE RANDOM GAME.
 			for (int i = 0;i<gamesPerSimul ;i++) {
-				int movesExchanged = 60;
+				int movesExchanged = 50;
 				totalMoves = 0;
-				chessBoard = resetBoard();
+				resetBoard();
 				PGN_GAME_LOG = "[White: Random Chess AI]\n[Black: Random Chess AI]\n\n";
 				while(totalMoves<movesExchanged*2 && gameStatus() == 5) {
 					if (totalMoves%2==0) {
-						ChessNeural wBrain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
+						if (x!=simuls) { wBrain.newSynapseWeights(); }
 						String move = mxjava.computerMove(wBrain.predict(convertToState(chessBoard)), legalWMoves());
 						double[] action = mxjava.computerActionArray(wBrain.predict(convertToState(chessBoard)), legalWMoves());
 
@@ -119,8 +319,7 @@ public class Main {
 						}
 					}
 					else if (totalMoves%2==1) {
-
-						ChessNeural bBrain = new ChessNeural(normalState,moveOutput,neuronsPerHiddenLayer,learningRate);
+						if (x!=simuls) { bBrain.newSynapseWeights(); }
 						String move = mxjava.computerMove(bBrain.predict(convertToState(chessBoard)), legalBMoves());
 						double[] action = mxjava.computerActionArray(bBrain.predict(convertToState(chessBoard)), legalBMoves());
 
@@ -139,8 +338,6 @@ public class Main {
 							BLACK_WINS_FOR_ACTION.add(blank);
 						}
 						blackUpdateIfWin.add(action);
-
-
 						//MAKE THE MOVE
 						makeMove(move);
 						pureLog += move+ " ";
@@ -149,6 +346,7 @@ public class Main {
 							printBoard(chessBoard);
 						}
 					}
+
 				}
 				//*/
 
@@ -196,28 +394,34 @@ public class Main {
 				//UPDATE THE WINS
 				for (int k = 0;k<whiteMoves.size();k++) {
 					if(gameStatus()==1) {
-						WHITE_WINS_FOR_ACTION.set(whiteMoves.get(k), mxjava.addVectors(WHITE_WINS_FOR_ACTION.get(k),whiteUpdateIfWin.get(k)));
+						int directory = whiteMoves.get(k);
+						WHITE_WINS_FOR_ACTION.set(whiteMoves.get(k), mxjava.addVectors(WHITE_WINS_FOR_ACTION.get(directory),whiteUpdateIfWin.get(k)));
 					}
 					else if (gameStatus()==0 || gameStatus() ==5) {
-						WHITE_WINS_FOR_ACTION.set(whiteMoves.get(k),mxjava.addVectors(WHITE_WINS_FOR_ACTION.get(k),mxjava.scale(whiteUpdateIfWin.get(k), 0.5)));
+						int directory = whiteMoves.get(k);
+						WHITE_WINS_FOR_ACTION.set(directory,mxjava.addVectors(WHITE_WINS_FOR_ACTION.get(directory),mxjava.scale(whiteUpdateIfWin.get(k), 0.5)));
 					}
 				}
 				for (int k = 0;k<blackMoves.size()-1;k++) {
 					if(gameStatus()==-1) {
-						BLACK_WINS_FOR_ACTION.set(blackMoves.get(k), mxjava.addVectors(BLACK_WINS_FOR_ACTION.get(k),blackUpdateIfWin.get(k)));
+						int directory = blackMoves.get(k);
+						BLACK_WINS_FOR_ACTION.set(blackMoves.get(k), mxjava.addVectors(BLACK_WINS_FOR_ACTION.get(directory),blackUpdateIfWin.get(k)));
 					}
 					else if (gameStatus()==0 || gameStatus() ==5) {
-						BLACK_WINS_FOR_ACTION.set(blackMoves.get(k), mxjava.addVectors(BLACK_WINS_FOR_ACTION.get(k),mxjava.scale(blackUpdateIfWin.get(k),0.5)));
+						int directory = blackMoves.get(k);
+						BLACK_WINS_FOR_ACTION.set(blackMoves.get(k), mxjava.addVectors(BLACK_WINS_FOR_ACTION.get(directory),mxjava.scale(blackUpdateIfWin.get(k),0.5)));
 
 					}
 				}
-				if (!debugOn) {
-					//System.out.println(WHITE_STATES.size() + " "+WHITE_CHOSEN_ACTION_COUNT.size()+" "+BLACK_STATES.size() + " "+BLACK_CHOSEN_ACTION_COUNT.size());
-					System.out.println(gameStatus());
-					System.out.println(Arrays.toString(whiteMoves.toArray()));
-					System.out.println(Arrays.toString(blackMoves.toArray()));
+
+				System.out.println(gameStatus());
+
+				if (debugOn) {
+					System.out.println(WHITE_STATES.size() + " "+WHITE_CHOSEN_ACTION_COUNT.size()+" "+BLACK_STATES.size() + " "+BLACK_CHOSEN_ACTION_COUNT.size());
 					System.out.println(Arrays.toString(WHITE_CHOSEN_ACTION_COUNT.get(0)));
 					System.out.println(Arrays.toString(WHITE_WINS_FOR_ACTION.get(0)));
+					System.out.println(Arrays.toString(whiteMoves.toArray()));
+					System.out.println(Arrays.toString(blackMoves.toArray()));
 				}
 
 				whiteMoves.clear();
@@ -234,18 +438,61 @@ public class Main {
 				print2DArrayList(WHITE_WINS_FOR_ACTION,5);
 			}
 
+			WHITE_UCT1.clear();
+			BLACK_UCT1.clear();
 			//CREATE UCT1 FOR EACH STATE.
+			if ((x-1)<simuls) {
+				for (int i = 0;i<WHITE_STATES.size();i++) {
+					WHITE_UCT1.add(mxjava.UCT1Array(WHITE_WINS_FOR_ACTION.get(i), WHITE_CHOSEN_ACTION_COUNT.get(i), WHITE_STATES_APPEARANCES.get(i), Math.sqrt(2),0.5,true));
+				}
+				for (int i = 0;i<BLACK_STATES.size();i++) {
+					BLACK_UCT1.add(mxjava.UCT1Array(BLACK_WINS_FOR_ACTION.get(i), BLACK_CHOSEN_ACTION_COUNT.get(i), BLACK_STATES_APPEARANCES.get(i), Math.sqrt(2),0.5,true));
+				}
+			}
+			else {
+				for (int i = 0;i<WHITE_STATES.size();i++) {
+					WHITE_UCT1.add(mxjava.UCT1Array(WHITE_WINS_FOR_ACTION.get(i), WHITE_CHOSEN_ACTION_COUNT.get(i), WHITE_STATES_APPEARANCES.get(i), Math.sqrt(2),0.5,false));
+				}
+				for (int i = 0;i<BLACK_STATES.size();i++) {
+					BLACK_UCT1.add(mxjava.UCT1Array(BLACK_WINS_FOR_ACTION.get(i), BLACK_CHOSEN_ACTION_COUNT.get(i), BLACK_STATES_APPEARANCES.get(i), Math.sqrt(2),0.5,false));
+				}
+			}
+
+			//CHANGE THE ARRAYLIST TO AN ARRAY, AND TRAIN THE NEURAL NETWORK.
+			double[][] whiteTrainingInput = new double[WHITE_STATES.size()][WHITE_STATES.get(0).length];
+			double[][] whiteTrainingOutput = new double[WHITE_UCT1.size()][WHITE_UCT1.get(0).length];
+			double[][] blackTrainingInput = new double[BLACK_STATES.size()][BLACK_STATES.get(0).length];
+			double[][] blackTrainingOutput = new double[BLACK_UCT1.size()][BLACK_UCT1.get(0).length];
+
 			for (int i = 0;i<WHITE_STATES.size();i++) {
-				WHITE_UCT1.add(mxjava.UCT1Array(WHITE_WINS_FOR_ACTION.get(i), WHITE_CHOSEN_ACTION_COUNT.get(i), WHITE_STATES_APPEARANCES.get(i), Math.sqrt(2),0.3,false));
+				whiteTrainingInput[i] = WHITE_STATES.get(i);
+			}
+			for (int i = 0;i<WHITE_UCT1.size();i++) {
+				whiteTrainingOutput[i] = WHITE_UCT1.get(i);
 			}
 			for (int i = 0;i<BLACK_STATES.size();i++) {
-				BLACK_UCT1.add(mxjava.UCT1Array(BLACK_WINS_FOR_ACTION.get(i), BLACK_CHOSEN_ACTION_COUNT.get(i), BLACK_STATES_APPEARANCES.get(i), Math.sqrt(2),0.3,false));
+				blackTrainingInput[i] = BLACK_STATES.get(i);
 			}
-			
-			//CHANGE THE ARRAYLIST TO AN ARRAY, AND TRAIN THE NEURAL NETWORK.
-			
-			
+			for (int i = 0;i<BLACK_UCT1.size();i++) {
+				blackTrainingOutput[i] = BLACK_UCT1.get(i);
+			}
+			wBrain.INPUT_VALUES = whiteTrainingInput;
+			wBrain.OUTPUT_VALUES = whiteTrainingOutput;
+			bBrain.INPUT_VALUES = blackTrainingInput;
+			bBrain.OUTPUT_VALUES = blackTrainingOutput;
+
+			if (x<simuls) {
+				wBrain.trainNetwork(250);
+				bBrain.trainNetwork(250);
+			}
+
+			System.out.println("SIMULATION " + x + " completed.");
+
+			print2DArrayList(WHITE_UCT1,5);
+
 			if (debugOn) {
+				System.out.println(WHITE_STATES.size() + " " + WHITE_UCT1.size());
+				System.out.println(WHITE_STATES.get(0).length + " " + WHITE_UCT1.get(0).length);
 				System.out.println("\nUCT1\n---------");
 				print2DArrayList(WHITE_UCT1,15);
 				System.out.println("\nUCT2\n---------");
@@ -260,8 +507,19 @@ public class Main {
 			System.out.println(Arrays.toString(newArray));
 		}
 	}
+	
+	public static void print2DArray(double[][] ab, int c) {
+		for (int i = 0;i<Math.min(c, ab.length);i++) {
+			double[] newArray = ab[i];
+			System.out.println(Arrays.toString(newArray));
+		}
+	}
 
-	public static String[][] resetBoard() {
+	public static void resetBoard() {
+		boolean[] a = {false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
+		int[] b= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+		pawnDoubleMove = a;
+		timePawnMoved = b;
 		String[][] reset = {
 				//A   B   C   D   E   F   G   H
 				{"r","n","b","q","k","b","n","r"},  //8
@@ -272,7 +530,7 @@ public class Main {
 				{" "," "," "," "," "," "," "," "},  //3
 				{"P","P","P","P","P","P","P","P"},  //2
 				{"R","N","B","Q","K","B","N","R"}};	//1
-		return reset;
+		chessBoard = reset;
 	}
 
 
@@ -601,29 +859,29 @@ public class Main {
 		double[] a = new double[384];
 		for (int i = 0;i<64;i++) {
 			switch (chessBoard[i/8][i%8]) {
-			case "P": a[i*6] = 1;
+			case "P": a[i*6] = 4;
 			break;
-			case "N": a[i*6+1] = 1;
+			case "N": a[i*6+1] = 4;
 			break;
-			case "B": a[i*6+2] = 1;
+			case "B": a[i*6+2] = 4;
 			break;
-			case "R": a[i*6+3] = 1;
+			case "R": a[i*6+3] = 4;
 			break;
-			case "Q": a[i*6+4] = 1;
+			case "Q": a[i*6+4] = 4;
 			break;
-			case "K": a[i*6+5] = 1;
+			case "K": a[i*6+5] = 4;
 			break;
-			case "p": a[i*6] = -1;
+			case "p": a[i*6] = -4;
 			break;
-			case "n": a[i*6+1] = -1;
+			case "n": a[i*6+1] = -4;
 			break;
-			case "b": a[i*6+2] = -1;
+			case "b": a[i*6+2] = -4;
 			break;
-			case "r": a[i*6+3] = -1;
+			case "r": a[i*6+3] = -4;
 			break;
-			case "q": a[i*6+4] = -1;
+			case "q": a[i*6+4] = -4;
 			break;
-			case "k": a[i*6+5] = -1;
+			case "k": a[i*6+5] = -4;
 			break;
 			}
 		}
