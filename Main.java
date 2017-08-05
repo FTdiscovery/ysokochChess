@@ -60,7 +60,7 @@ public class Main {
 	 * We take advantage of the files that exist on the computer, and then train it before the computer tries reinforcement learning.
 	 * :)
 	 */
-	static String[] books = {"lekopolgar1996","anandpolgar1992", "anandpolgar1996", "kramnikpolgar1996","shirovpolgar1996"}; 
+	static String[] books = {"anandpolgar1992", "anandpolgar1996", "kramnikpolgar1996","shirovpolgar1996","lekopolgar1996"};
 	static String documents = System.getProperty ("user.home") + "/Documents/Procrastination Box/Chess Books/";
 
 	//Helps with Evaluation.
@@ -121,7 +121,7 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 
-		double[][] normalState = new double[1][convertToState(chessBoard).length]; //fed input. blank at the moment in order for initialization of the neural network
+		double[][] normalState = new double[1][chessBoardToState().length]; //fed input. blank at the moment in order for initialization of the neural network
 		double[][] moveOutput = new double[1][totalLegalMovesPerPosition]; // fed output. blank of the moment in order for initialization of the neural network
 		int neuronsPerHiddenLayer = 450;
 		double learningRate = 0.01;
@@ -162,7 +162,7 @@ public class Main {
 				String move = library.get(i)[j];
 				//Save everything into the moves.
 				if (totalMoves%2==0) {
-					if (mxjava.stateInDatabase(WHITE_STATES, convertToState(chessBoard))) {
+					if (mxjava.stateInDatabase(WHITE_STATES, chessBoardToState())) {
 						double[] action;
 						if (move.length()>=4) {
 							action = mxjava.action(legalWMoves(), move, totalLegalMovesPerPosition);
@@ -170,7 +170,7 @@ public class Main {
 						else {
 							action = mxjava.castleAction(legalWMoves(), move, totalLegalMovesPerPosition);
 						}
-						int directory = mxjava.whereInDatabase(WHITE_STATES,convertToState(chessBoard));
+						int directory = mxjava.whereInDatabase(WHITE_STATES,chessBoardToState());
 						WHITE_STATES_APPEARANCES.set(directory, WHITE_STATES_APPEARANCES.get(directory)+1);
 						WHITE_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(WHITE_CHOSEN_ACTION_COUNT.get(directory), action));
 						whiteMoves.add(directory);	
@@ -186,7 +186,7 @@ public class Main {
 							action = mxjava.castleAction(legalWMoves(), move, totalLegalMovesPerPosition);
 						}
 						whiteMoves.add(WHITE_STATES.size());
-						WHITE_STATES.add(convertToState(chessBoard));
+						WHITE_STATES.add(chessBoardToState());
 						WHITE_STATES_APPEARANCES.add((double) 1);
 						WHITE_CHOSEN_ACTION_COUNT.add(action);
 						WHITE_WINS_FOR_ACTION.add(blank);
@@ -196,7 +196,7 @@ public class Main {
 
 				}
 				else {
-					if (mxjava.stateInDatabase(BLACK_STATES, convertToState(chessBoard))) {
+					if (mxjava.stateInDatabase(BLACK_STATES, chessBoardToState())) {
 						double[] action;
 
 						if (move.length()>=4) {
@@ -205,7 +205,7 @@ public class Main {
 						else {
 							action = mxjava.castleAction(legalBMoves(), move, totalLegalMovesPerPosition);
 						}
-						int directory = mxjava.whereInDatabase(BLACK_STATES,convertToState(chessBoard));
+						int directory = mxjava.whereInDatabase(BLACK_STATES,chessBoardToState());
 						BLACK_STATES_APPEARANCES.set(directory, BLACK_STATES_APPEARANCES.get(directory)+1);
 						BLACK_CHOSEN_ACTION_COUNT.set(directory, mxjava.addVectors(BLACK_CHOSEN_ACTION_COUNT.get(directory), action));
 						blackMoves.add(directory);
@@ -221,7 +221,7 @@ public class Main {
 							action = mxjava.castleAction(legalBMoves(), move, totalLegalMovesPerPosition);
 						}
 						blackMoves.add(BLACK_STATES.size());
-						BLACK_STATES.add(convertToState(chessBoard));
+						BLACK_STATES.add(chessBoardToState());
 						BLACK_STATES_APPEARANCES.add((double)1);
 						BLACK_CHOSEN_ACTION_COUNT.add(action);
 						BLACK_WINS_FOR_ACTION.add(blank);
@@ -231,6 +231,7 @@ public class Main {
 				}
 				//Make the Move
 				makeMove(move);
+				printBoard();
 			}
 
 			//Game is finished.
@@ -303,13 +304,17 @@ public class Main {
 			bBrain.INPUT_VALUES = blackTrainingInput;
 			bBrain.OUTPUT_VALUES = blackTrainingOutput;
 
-			//wBrain.trainNetwork(1500);
-			//bBrain.trainNetwork(1500);
-
+			wBrain.trainNetwork(500);
+			bBrain.trainNetwork(500);
+			
 			resetBoard();
+			
+			print2DArrayList(WHITE_UCT1,5);
+			System.out.println(Arrays.toString(wBrain.predict(chessBoardToState())));
+			
 		}
 
-		materialArray();
+		System.out.println("\n----Training done----\n");
 
 		//Start Reinforcement Learning
 		ArrayList<Integer> whiteMoves = new ArrayList<>();
@@ -331,12 +336,12 @@ public class Main {
 				while(totalMoves<movesExchanged*2 && gameStatus() == 5) {
 					if (totalMoves%2==0) {
 						if (x!=simuls) { wBrain.newSynapseWeights(); }
-						String move = mxjava.computerMove(wBrain.predict(convertToState(chessBoard)), legalWMoves());
-						double[] action = mxjava.computerActionArray(wBrain.predict(convertToState(chessBoard)), legalWMoves());
+						String move = mxjava.computerMove(wBrain.predict(chessBoardToState()), legalWMoves());
+						double[] action = mxjava.computerActionArray(wBrain.predict(chessBoardToState()), legalWMoves());
 
 						//ADD THE STATES AND ACTION INTO THE GAME LOG
-						if (mxjava.stateInDatabase(WHITE_STATES, convertToState(chessBoard))) {
-							int directory = mxjava.whereInDatabase(WHITE_STATES,convertToState(chessBoard));
+						if (mxjava.stateInDatabase(WHITE_STATES, chessBoardToState())) {
+							int directory = mxjava.whereInDatabase(WHITE_STATES,chessBoardToState());
 							move = mxjava.computerMove(WHITE_WINS_FOR_ACTION.get(directory), legalWMoves());
 							action = mxjava.computerActionArray(WHITE_WINS_FOR_ACTION.get(directory), legalWMoves());
 							WHITE_STATES_APPEARANCES.set(directory, WHITE_STATES_APPEARANCES.get(directory)+1);
@@ -344,8 +349,9 @@ public class Main {
 							whiteMoves.add(directory);		
 						}
 						else {
+							System.out.println("unseen, move:"+totalMoves/2 + ", white");
 							whiteMoves.add(WHITE_STATES.size());
-							WHITE_STATES.add(convertToState(chessBoard));
+							WHITE_STATES.add(chessBoardToState());
 							WHITE_STATES_APPEARANCES.add((double) 1);
 							WHITE_CHOSEN_ACTION_COUNT.add(action);
 							WHITE_WINS_FOR_ACTION.add(blank);
@@ -363,12 +369,12 @@ public class Main {
 					}
 					else if (totalMoves%2==1) {
 						if (x!=simuls) { bBrain.newSynapseWeights(); }
-						String move = mxjava.computerMove(bBrain.predict(convertToState(chessBoard)), legalBMoves());
-						double[] action = mxjava.computerActionArray(bBrain.predict(convertToState(chessBoard)), legalBMoves());
+						String move = mxjava.computerMove(bBrain.predict(chessBoardToState()), legalBMoves());
+						double[] action = mxjava.computerActionArray(bBrain.predict(chessBoardToState()), legalBMoves());
 
 						//ADD THE STATES AND ACTION INTO THE GAME LOG
-						if (mxjava.stateInDatabase(BLACK_STATES, convertToState(chessBoard))) {
-							int directory = mxjava.whereInDatabase(BLACK_STATES,convertToState(chessBoard));
+						if (mxjava.stateInDatabase(BLACK_STATES, chessBoardToState())) {
+							int directory = mxjava.whereInDatabase(BLACK_STATES,chessBoardToState());
 							move = mxjava.computerMove(BLACK_WINS_FOR_ACTION.get(directory), legalBMoves());
 							action = mxjava.computerActionArray(BLACK_WINS_FOR_ACTION.get(directory), legalBMoves());
 							BLACK_STATES_APPEARANCES.set(directory, BLACK_STATES_APPEARANCES.get(directory)+1);
@@ -376,8 +382,9 @@ public class Main {
 							blackMoves.add(directory);
 						}
 						else {
+							System.out.println("unseen, move:"+totalMoves/2 + ", black");
 							blackMoves.add(BLACK_STATES.size());
-							BLACK_STATES.add(convertToState(chessBoard));
+							BLACK_STATES.add(chessBoardToState());
 							BLACK_STATES_APPEARANCES.add((double)1);
 							BLACK_CHOSEN_ACTION_COUNT.add(action);
 							BLACK_WINS_FOR_ACTION.add(blank);
@@ -948,7 +955,8 @@ public class Main {
 
 	//VERSION 2
 	public static double[] chessBoardToState() {
-		double[] newArray = mxjava.appendArrays(mxjava.appendArrays(materialArray(), castlePossible()), fPawn());
+		double[] newArray = mxjava.appendArrays(materialArray(), castlePossible());
+		newArray = mxjava.appendArrays(newArray, fPawn());
 		newArray = mxjava.appendArrays(newArray, simplePositionalEval());
 		newArray = mxjava.appendArrays(newArray, piecesInMiddle());
 		newArray = mxjava.appendArrays(newArray, mobility());
@@ -1118,73 +1126,77 @@ public class Main {
 			piecePositions[i]="";
 		}
 
-		String[] allWhite = legalWMoves();
-		String[] allBlack = legalBMoves();
+		String[] allWhite = legalNonKingWMoves();
+		String[] allBlack = legalNonKingBMoves();
 
 		for (int i = 0;i<allWhite.length;i++) {
-			String startingPoint=compReadableMove(allWhite[i]);
-			String pieceAtStartingPoint = chessBoard[8-(Character.getNumericValue(startingPoint.charAt(1)))][Character.getNumericValue(startingPoint.charAt(0))-1];
-			if(!pieceAtStartingPoint.equals("P") && !pieceAtStartingPoint.equals("K")) {
-				//do stuff
-				String[] typesOfPieces={"N","B","R"};
-				for (int j = 0;j<typesOfPieces.length;j++) {
-					if (pieceAtStartingPoint.equals(typesOfPieces[j])) {
-						if (piecePositions[2*j].equals("")) { piecePositions[2*j]=startingPoint.substring(0, 2); mobility[2*j]++; mobility[16+2*j]++;}
-						else if (startingPoint.substring(0, 2).equals(piecePositions[2*j])) { mobility[2*j]++; mobility[16+2*j]++;}
-						else if (startingPoint.substring(0, 2).equals(piecePositions[2*j+1])) { mobility[2*j+1]++; mobility[16+2*j]++;}
-						else {
-							if (piecePositions[2*j+1].equals("")) { piecePositions[2*j+1]=startingPoint.substring(0,2); mobility[2*j+1]++; mobility[16+2*j]++;}
+			if (allWhite[i].length()>0) {
+				String startingPoint=compReadableMove(allWhite[i]);
+				String pieceAtStartingPoint = chessBoard[8-(Character.getNumericValue(startingPoint.charAt(1)))][Character.getNumericValue(startingPoint.charAt(0))-1];
+				if(!pieceAtStartingPoint.equals("P") && !pieceAtStartingPoint.equals("K")) {
+					//do stuff
+					String[] typesOfPieces={"N","B","R"};
+					for (int j = 0;j<typesOfPieces.length;j++) {
+						if (pieceAtStartingPoint.equals(typesOfPieces[j])) {
+							if (piecePositions[2*j].equals("")) { piecePositions[2*j]=startingPoint.substring(0, 2); mobility[2*j]++; mobility[16+2*j]++;}
+							else if (startingPoint.substring(0, 2).equals(piecePositions[2*j])) { mobility[2*j]++; mobility[16+2*j]++;}
+							else if (startingPoint.substring(0, 2).equals(piecePositions[2*j+1])) { mobility[2*j+1]++; mobility[16+2*j]++;}
 							else {
-								mobility[14]++;
-								mobility[16+2*j]++;
+								if (piecePositions[2*j+1].equals("")) { piecePositions[2*j+1]=startingPoint.substring(0,2); mobility[2*j+1]++; mobility[16+2*j]++;}
+								else {
+									mobility[14]++;
+									mobility[16+2*j]++;
+								}
 							}
 						}
-					}
-				}	
-			}
-			//Check Queen Mobility
-			if (pieceAtStartingPoint.equals("Q")) {
-				if (piecePositions[6].equals("")) {	piecePositions[6]=startingPoint.substring(0, 2); mobility[6]++; mobility[22]++;}
-				else if (startingPoint.substring(0,2).equals(piecePositions[6])) {mobility[6]++; mobility[22]++;}
-				else {
-					mobility[14]++;
-					mobility[22]++;
+					}	
 				}
+				//Check Queen Mobility
+				if (pieceAtStartingPoint.equals("Q")) {
+					if (piecePositions[6].equals("")) {	piecePositions[6]=startingPoint.substring(0, 2); mobility[6]++; mobility[22]++;}
+					else if (startingPoint.substring(0,2).equals(piecePositions[6])) {mobility[6]++; mobility[22]++;}
+					else {
+						mobility[14]++;
+						mobility[22]++;
+					}
 
+				}
 			}
 		}
 		for (int i = 0;i<allBlack.length;i++) {
-			String startingPoint=compReadableMove(allBlack[i]);
-			String pieceAtStartingPoint = chessBoard[8-(Character.getNumericValue(startingPoint.charAt(1)))][Character.getNumericValue(startingPoint.charAt(0))-1];
-			if(!pieceAtStartingPoint.equals("p") && !pieceAtStartingPoint.equals("k")) {
-				//do stuff
-				String[] typesOfPieces={"n","b","r"};
-				for (int j = 0;j<typesOfPieces.length;j++) {
-					if (pieceAtStartingPoint.equals(typesOfPieces[j])) {
-						if (piecePositions[7+2*j].equals("")) { piecePositions[7+2*j]=startingPoint.substring(0, 2); mobility[7+2*j]++; mobility[17+2*j]++;}
-						else if (startingPoint.substring(0, 2).equals(piecePositions[7+2*j])) { mobility[7+2*j]++; mobility[17+2*j]++;}
-						else if (startingPoint.substring(0, 2).equals(piecePositions[7+2*j+1]))  { mobility[7+2*j+1]++; mobility[17+2*j]++;}
-						else {
-							if (piecePositions[7+2*j+1].equals("")) { piecePositions[7+2*j+1]=startingPoint.substring(0,2); mobility[7+2*j+1]++; mobility[17+2*j]++;}
+			if (allBlack[i].length()>0) {
+				String startingPoint=compReadableMove(allBlack[i]);
+				String pieceAtStartingPoint = " ";
+				pieceAtStartingPoint = chessBoard[Math.max(0, Math.min(7,8-(Character.getNumericValue(startingPoint.charAt(1)))))][Math.max(0, Math.min(7, Character.getNumericValue(startingPoint.charAt(0))-1))];
+
+				if(!pieceAtStartingPoint.equals("p") && !pieceAtStartingPoint.equals("k")) {
+					//do stuff
+					String[] typesOfPieces={"n","b","r"};
+					for (int j = 0;j<typesOfPieces.length;j++) {
+						if (pieceAtStartingPoint.equals(typesOfPieces[j])) {
+							if (piecePositions[7+2*j].equals("")) { piecePositions[7+2*j]=startingPoint.substring(0, 2); mobility[7+2*j]++; mobility[17+2*j]++;}
+							else if (startingPoint.substring(0, 2).equals(piecePositions[7+2*j])) { mobility[7+2*j]++; mobility[17+2*j]++;}
+							else if (startingPoint.substring(0, 2).equals(piecePositions[7+2*j+1]))  { mobility[7+2*j+1]++; mobility[17+2*j]++;}
 							else {
-								mobility[15]++;
-								mobility[17+2*j]++;
+								if (piecePositions[7+2*j+1].equals("")) { piecePositions[7+2*j+1]=startingPoint.substring(0,2); mobility[7+2*j+1]++; mobility[17+2*j]++;}
+								else {
+									mobility[15]++;
+									mobility[17+2*j]++;
+								}
 							}
 						}
+					}	
+				}
+				if (pieceAtStartingPoint.equals("q")) {
+					if (piecePositions[13].equals("")) {	piecePositions[13]=startingPoint.substring(0, 2); mobility[13]++; mobility[23]++;}
+					else if (startingPoint.substring(0,2).equals(piecePositions[13])) {mobility[13]++; mobility[23]++;}
+					else {
+						mobility[15]++;
+						mobility[23]++;
 					}
-				}	
-			}
-			if (pieceAtStartingPoint.equals("q")) {
-				if (piecePositions[13].equals("")) {	piecePositions[13]=startingPoint.substring(0, 2); mobility[13]++; mobility[23]++;}
-				else if (startingPoint.substring(0,2).equals(piecePositions[13])) {mobility[13]++; mobility[23]++;}
-				else {
-					mobility[15]++;
-					mobility[23]++;
 				}
 			}
 		}
-
-		resetBoard();
 		return mobility;
 	}
 
@@ -1240,19 +1252,19 @@ public class Main {
 			pawnPlacement[40+i]=coor5.get(i);
 		}
 		for (int i = 0;i<coor6.size();i++) {
-			pawnPlacement[48+i]=coor1.get(i);
+			pawnPlacement[48+i]=coor6.get(i);
 		}
 		for (int i = 0;i<coor7.size();i++) {
-			pawnPlacement[64+i]=coor2.get(i);
+			pawnPlacement[64+i]=coor7.get(i);
 		}
 		for (int i = 0;i<coor8.size();i++) {
-			pawnPlacement[72+i]=coor3.get(i);
+			pawnPlacement[72+i]=coor8.get(i);
 		}
 		for (int i = 0;i<coor9.size();i++) {
-			pawnPlacement[80+i]=coor4.get(i);
+			pawnPlacement[80+i]=coor9.get(i);
 		}
 		for (int i = 0;i<coor10.size();i++) {
-			pawnPlacement[88+i]=coor5.get(i);
+			pawnPlacement[88+i]=coor10.get(i);
 		}
 		return pawnPlacement;
 	}
@@ -1307,6 +1319,7 @@ public class Main {
 		return array;
 	}
 
+
 	public static String[] legalWMoves() {
 		String moves="";
 		for (int i=0; i<64; i++) {
@@ -1322,6 +1335,25 @@ public class Main {
 			case "Q": moves+=legalWQ(i);
 			break;
 			case "K": moves+=legalWK(i);
+			break;
+			}
+		}
+		return moves.split(" ");
+	}
+
+	public static String[] legalNonKingWMoves() {
+		String moves="";
+		for (int i=0; i<64; i++) {
+			switch (chessBoard[i/8][i%8]) {
+			case "P": moves+=legalWP(i);
+			break;
+			case "R": moves+=legalWR(i);
+			break;
+			case "N": moves+=legalWN(i);
+			break;
+			case "B": moves+=legalWB(i);
+			break;
+			case "Q": moves+=legalWQ(i);
 			break;
 			}
 		}
@@ -1816,6 +1848,25 @@ public class Main {
 			case "q": moves+=legalBQ(i);
 			break;
 			case "k": moves+=legalBK(i);
+			break;
+			}
+		}
+		return moves.split(" ");
+	}
+
+	public static String[] legalNonKingBMoves() {
+		String moves="";
+		for (int i=0; i<64; i++) {
+			switch (chessBoard[i/8][i%8]) {
+			case "p": moves+=legalBP(i);
+			break;
+			case "r": moves+=legalBR(i);
+			break;
+			case "n": moves+=legalBN(i);
+			break;
+			case "b": moves+=legalBB(i);
+			break;
+			case "q": moves+=legalBQ(i);
 			break;
 			}
 		}
